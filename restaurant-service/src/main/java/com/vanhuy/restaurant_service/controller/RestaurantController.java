@@ -21,7 +21,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/restaurants")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class RestaurantController {
 
