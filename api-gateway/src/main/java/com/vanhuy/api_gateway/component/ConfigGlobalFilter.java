@@ -25,7 +25,8 @@ public class ConfigGlobalFilter implements GlobalFilter , Ordered {
         String path = exchange.getRequest().getURI().getPath();
 
         // Allow public paths to pass through without JWT validation
-        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/register")) {
+        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/register") || path.startsWith("/aggregate/**" )
+        || path.startsWith("/swagger-ui/**") || path.startsWith("/api-docs/**")) {
             return chain.filter(exchange); //skip the filter
         }
 

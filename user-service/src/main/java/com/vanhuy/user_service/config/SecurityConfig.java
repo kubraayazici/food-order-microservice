@@ -34,21 +34,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         req -> req.requestMatchers(
-                                "/api/v1/auth/**"
+                                "/api/v1/auth/**" , "/api/v1/users/**" ,"/swagger-ui/**" , "/api-docs/**"
                         ).permitAll().anyRequest().authenticated()
                 )
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .authenticationProvider(authenticationProvider  )
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
-
-
-
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
