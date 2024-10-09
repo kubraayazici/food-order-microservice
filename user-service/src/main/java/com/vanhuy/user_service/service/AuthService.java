@@ -5,6 +5,7 @@ import com.vanhuy.user_service.dto.AuthResponse;
 import com.vanhuy.user_service.dto.LoginRequest;
 import com.vanhuy.user_service.dto.RegisterRequest;
 import com.vanhuy.user_service.dto.RegisterResponse;
+import com.vanhuy.user_service.exception.AuthException;
 import com.vanhuy.user_service.exception.UserNotFoundException;
 import com.vanhuy.user_service.model.User;
 import com.vanhuy.user_service.repository.UserRepository;
@@ -65,6 +66,26 @@ public class AuthService {
         userRepository.save(user);
 
         return new RegisterResponse("User registered successfully");
+    }
+
+    public void validateToken(String jwt) throws AuthException {
+        try{
+            // extract username from jwt
+            String username = jwtUtil.extractUsername(jwt);
+
+            // load user details from username
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            // validate the jwt
+            if(jwtUtil.validateToken(jwt, userDetails)){
+                log.info("Token for user {} is valid", username);
+            } else {
+                log.error("Token for user {} is invalid", username);
+                throw new AuthException("Invalid token");
+            };
+        } catch (Exception e) {
+            throw new AuthException("Invalid token" + e.getMessage());
+        }
     }
 
 }
