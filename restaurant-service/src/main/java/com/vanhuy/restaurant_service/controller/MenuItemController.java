@@ -20,7 +20,6 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/api/v1/menu-items")
 public class MenuItemController {
     private final MenuItemService menuItemService;

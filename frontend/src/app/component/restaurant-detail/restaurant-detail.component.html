@@ -1,6 +1,6 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     <div *ngFor="let item of menuItems" class="bg-white rounded-md shadow-md overflow-hidden">
-        <img src="http://localhost:8082/api/v1/menu-items/images/{{ item.imageUrl }}" class="w-full h-40 object-cover" alt="{{ item.name }}">
+        <img src="http://localhost:9000/api/v1/menu-items/images/{{ item.imageUrl }}" class="w-full h-40 object-cover" alt="{{ item.name }}">
         <div class="p-4">
             <h5 class="text-lg font-semibold mb-2">{{ item.name }}</h5>
             <!-- <p class="text-sm text-gray-600 mb-2">{{ item.description }}</p> -->

@@ -4,7 +4,7 @@
          class="bg-white rounded-md shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
          (click)="goToRestaurantDetail(restaurant.restaurantId)">
         <div class="relative">
-            <img [src]="'http://localhost:8082/api/v1/restaurants/images/' + restaurant.image" class="w-full h-36 object-cover" [alt]="restaurant.name">
+            <img [src]="'http://localhost:9000/api/v1/restaurants/images/' + restaurant.image" class="w-full h-36 object-cover" [alt]="restaurant.name">
             <!-- <span *ngIf="restaurant.promo" class="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">Promo</span> -->
         </div>
         <div class="p-4">

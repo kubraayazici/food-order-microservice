@@ -20,14 +20,25 @@ public class ConfigGlobalFilter implements GlobalFilter , Ordered {
     @Lazy
     private AuthClient authClient;
 
+    private static final String[]  publicEndpoints = {
+            "/api/v1/auth/login",
+            "/api/v1/auth/register",
+            "/aggregate/**",
+            "/swagger-ui/**",
+            "/api-docs/**",
+            "/api/v1/restaurants",
+            "/api/v1/menu-items",
+            "/api/v1/restaurants/api-docs"
+    };
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
 
-        // Allow public paths to pass through without JWT validation
-        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/register") || path.startsWith("/aggregate/**" )
-        || path.startsWith("/swagger-ui/**") || path.startsWith("/api-docs/**")) {
-            return chain.filter(exchange); //skip the filter
+        for (String publicEndpoint : publicEndpoints) {
+            if (path.contains(publicEndpoint)) {
+                return chain.filter(exchange); // Allow the request to pass through
+            }
         }
 
         // Check for Authorization header

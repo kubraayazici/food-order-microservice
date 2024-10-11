@@ -6,6 +6,7 @@ import { OrderRequest } from '../../dto/order/order-request';
 import { CartService } from '../../service/cart.service';
 import { CartItem } from '../../dto/CartItem';
 import { Observable, map, switchMap, take } from 'rxjs';
+import { environment } from '../../../environments/enviroment';
 
 @Component({
   selector: 'app-shipping',
@@ -14,26 +15,27 @@ import { Observable, map, switchMap, take } from 'rxjs';
 })
 export class ShippingComponent implements OnInit {
 
-  shippingForm! : FormGroup;
-  cartItems$ : Observable<CartItem[]> | undefined;
-  total$ : Observable<number> | undefined;
+  shippingForm!: FormGroup;
+  cartItems$: Observable<CartItem[]> | undefined;
+  total$: Observable<number> | undefined;
+  baseUrl = environment.baseUrl;
   constructor(
     private formBuilder: FormBuilder,
-    private router : Router,
+    private router: Router,
     private orderService: OrderService,
-    private cartService : CartService
+    private cartService: CartService
 
-  ) {  }
+  ) { }
 
   ngOnInit(): void {
     this.shippingForm = this.formBuilder.group({
       recipientName: ['', Validators.required],
-      contactEmail: ['',Validators.required],
-      shippingAddress: ['',Validators.required],
-      contactPhone: ['',Validators.required]
+      contactEmail: ['', Validators.required],
+      shippingAddress: ['', Validators.required],
+      contactPhone: ['', Validators.required]
     });
-     this.cartItems$ = this.cartService.getCartItems();
-     this.total$ = this.cartItems$.pipe(
+    this.cartItems$ = this.cartService.getCartItems();
+    this.total$ = this.cartItems$.pipe(
       map(items => items.reduce((total, item) => total + item.menuItem.price * item.quantity, 0))
     );
   }

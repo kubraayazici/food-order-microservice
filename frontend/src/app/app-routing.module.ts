@@ -5,13 +5,15 @@ import { ListRestaurantComponent } from './component/list-restaurant/list-restau
 import { CartComponent } from './component/cart/cart.component';
 import { OrderConfirmationComponent } from './component/order-confirmation/order-confirmation.component';
 import { ShippingComponent } from './component/shipping/shipping.component';
+import { LoginComponent } from './component/login/login.component';
 
 const routes: Routes = [
   { path: '', component: ListRestaurantComponent },
   { path: 'restaurant/:id', component: RestaurantDetailComponent },
   { path : 'cart', component: CartComponent },
   { path: 'order-confirmation/:orderId', component: OrderConfirmationComponent },
-  { path: 'shipping', component: ShippingComponent }
+  { path: 'shipping', component: ShippingComponent },
+  { path: 'login', component: LoginComponent }
 ];
 
 @NgModule({

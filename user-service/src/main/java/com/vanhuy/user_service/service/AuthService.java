@@ -32,19 +32,25 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthResponse authenticate(LoginRequest loginRequest) throws BadCredentialsException {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-        );
+    public AuthResponse authenticate(LoginRequest loginRequest) {
+        try {
+            var authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
 
-        if (authentication.isAuthenticated()) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
-            String jwt = jwtUtil.generateToken(userDetails);
-            log.info("User {} logged in successfully", loginRequest.getUsername());
-            return new AuthResponse(jwt);
-        }else {
-            throw new BadCredentialsException("Invalid username or password");
+            if (authentication.isAuthenticated()) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
+                String jwt = jwtUtil.generateToken(userDetails);
+                log.info("User {} logged in successfully", loginRequest.getUsername());
+                return new AuthResponse(jwt);
+            }else {
+                throw new BadCredentialsException("Invalid username or password");
+            }
+        }catch (Exception e) {
+            log.error("Invalid username or password", e);
+            throw new BadCredentialsException("Invalid username or password" , e);
         }
+
 
     }
 

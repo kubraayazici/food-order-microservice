@@ -5,6 +5,7 @@ import { OrderService } from '../../service/order.service';
 import { Router } from '@angular/router';
 import { OrderItemRequest, OrderRequest } from '../../dto/order/order-request';
 import { CartService } from '../../service/cart.service';
+import { environment } from '../../../environments/enviroment';
 
 @Component({
   selector: 'app-cart',
@@ -14,6 +15,7 @@ import { CartService } from '../../service/cart.service';
 export class CartComponent implements OnInit {
   cartItems$: Observable<CartItem[]>;
   checkoutError: string = '';
+  baseUrl = environment.baseUrl;
 
   private readonly TAX_RATE = 0.08;
 
