@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.Collections;
 
@@ -34,7 +35,7 @@ public class AuthService {
 
     public AuthResponse authenticate(LoginRequest loginRequest) {
         try {
-            var authentication = authenticationManager.authenticate(
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
@@ -43,15 +44,14 @@ public class AuthService {
                 String jwt = jwtUtil.generateToken(userDetails);
                 log.info("User {} logged in successfully", loginRequest.getUsername());
                 return new AuthResponse(jwt);
-            }else {
+            } else {
+                log.warn("Authentication failed for user: {}", loginRequest.getUsername());
                 throw new BadCredentialsException("Invalid username or password");
             }
-        }catch (Exception e) {
-            log.error("Invalid username or password", e);
-            throw new BadCredentialsException("Invalid username or password" , e);
+        } catch (Exception e) {
+            log.error("Unexpected error during authentication for user: {}", loginRequest.getUsername(), e);
+            throw new RuntimeException("An unexpected error occurred during authentication", e);
         }
-
-
     }
 
     public RegisterResponse register (RegisterRequest registerRequest) {

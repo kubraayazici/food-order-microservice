@@ -8,41 +8,33 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent implements OnInit {
-  loginForm : FormGroup;
+export class LoginComponent {
+  username: string = '';
+  password: string = '';
   error : string = '';
+
   constructor(
-    private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) {
-    this.loginForm = this.formBuilder.group({
-      username: ['', Validators.required],
-      password:  ['', Validators.required]
-    });
-   }
-
-  ngOnInit(): void {
-    if (this.authService.currentUserValue) {
-      this.router.navigate(['/']);
-    }
-  }
+  ) {}
+  
 
   onSubmit() {
-    debugger;
-    if (this.loginForm.invalid) {
-      return;
-    }
-
-    this.authService.login(this.loginForm.value)
-   
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/']);
-        },
-        error: error => {
-          this.error = error.error.message || 'Login failed';
-        }
-      });
+    debugger
+    this.authService.login(this.username, this.password).subscribe(
+      response => {
+        console.log(response );
+        
+        console.log('Login successful');
+        // Navigate to home page or dashboard
+        this.router.navigate(['/']);
+      },
+      error => {
+        console.error('Login failed', error);
+        error = 'Invalid username or password';
+        // Handle error (show message to user)
+      }
+    );
   }
+  
 }

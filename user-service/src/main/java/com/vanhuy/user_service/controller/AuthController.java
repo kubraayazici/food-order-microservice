@@ -6,19 +6,28 @@ import com.vanhuy.user_service.dto.RegisterRequest;
 import com.vanhuy.user_service.exception.AuthException;
 import com.vanhuy.user_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) throws AuthException {
-        AuthResponse authResponse = authService.authenticate(loginRequest);
-        return ResponseEntity.ok(authResponse);
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) throws AuthException {
+
+        try{
+        AuthResponse response = authService.authenticate(loginRequest);
+        log.info("Login successful for user: {}", loginRequest.getUsername());
+        return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Login failed for user: {}", loginRequest.getUsername(), e);
+            throw e;
+        }
     }
 
     @PostMapping("/register")

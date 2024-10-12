@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, Observable } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { LoginRequest } from '../dto/auth/LoginRequest';
 import { AuthResponse } from '../dto/auth/AuthResponse';
 import { environment } from '../../environments/enviroment';
@@ -9,36 +9,35 @@ import { environment } from '../../environments/enviroment';
   providedIn: 'root'
 })
 export class AuthService {
-  private authUrl = environment.baseUrl + '/auth';
-  private currentUserSubject!: BehaviorSubject<string | null>;
-  public currentUser!: Observable<string | null>;
+  // private authUrl = environment.baseUrl + '/auth';
+  private authUrl = 'http://localhost:9000/api/v1/auth';
 
-  constructor(private http : HttpClient) {
-    this.currentUserSubject = new BehaviorSubject<string | null>(localStorage.getItem('token'));
-    this.currentUser = this.currentUserSubject.asObservable();
-   }
+  constructor(private http: HttpClient) { }
 
-   public get currentUserValue(): string | null {
-      return this.currentUserSubject.value;
-   }
-
-   login(loginRequest: LoginRequest) : Observable<AuthResponse> {
-    debugger;
-      return this.http.post<AuthResponse>(`${this.authUrl}/login`, loginRequest)
+  login(username: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}/login`, { username, password })
       .pipe(
-        map(response => {
-            // store user details and jwt token in local storage to keep user logged in between page refreshes
-            localStorage.setItem('token', response.token);
-            this.currentUserSubject.next(response.token);
-            return response;
+        tap(response => {
+          console.log('Login response:', response);
+          this.setToken(response.token);
+        }),
+        catchError(error => {
+          console.error('Login error:', error);
+          return throwError(() => new Error('Login failed. Please check your credentials.'));
         })
       );
-   }
+  }
+  
+  private setToken(token: string) {
+    localStorage.setItem('token', token);
+  }
 
-   logout() : void {
-    localStorage.removeItem('token');
-    this.currentUserSubject.next(null);
-   }
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
 
+  isLoggedIn(): boolean {
+    return !!this.getToken()
+  }
 
 }

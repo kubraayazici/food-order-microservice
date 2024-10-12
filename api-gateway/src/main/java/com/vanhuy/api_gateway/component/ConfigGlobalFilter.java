@@ -33,6 +33,7 @@ public class ConfigGlobalFilter implements GlobalFilter , Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+
         String path = exchange.getRequest().getURI().getPath();
 
         for (String publicEndpoint : publicEndpoints) {
