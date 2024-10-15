@@ -1,10 +1,7 @@
 package com.vanhuy.user_service.service;
 
 import com.vanhuy.user_service.component.JwtUtil;
-import com.vanhuy.user_service.dto.AuthResponse;
-import com.vanhuy.user_service.dto.LoginRequest;
-import com.vanhuy.user_service.dto.RegisterRequest;
-import com.vanhuy.user_service.dto.RegisterResponse;
+import com.vanhuy.user_service.dto.*;
 import com.vanhuy.user_service.exception.AuthException;
 import com.vanhuy.user_service.exception.UserNotFoundException;
 import com.vanhuy.user_service.model.User;
@@ -19,7 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.Collections;
 
@@ -39,18 +35,16 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
-            if (authentication.isAuthenticated()) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
-                String jwt = jwtUtil.generateToken(userDetails);
-                log.info("User {} logged in successfully", loginRequest.getUsername());
-                return new AuthResponse(jwt);
-            } else {
-                log.warn("Authentication failed for user: {}", loginRequest.getUsername());
-                throw new BadCredentialsException("Invalid username or password");
-            }
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String jwt = jwtUtil.generateToken(userDetails);
+            log.info("User {} logged in successfully", loginRequest.getUsername());
+            return new AuthResponse(jwt);
+        } catch (BadCredentialsException e) {
+            log.warn("Authentication failed for user: {}", loginRequest.getUsername());
+            throw new AuthException("Invalid username or password");
         } catch (Exception e) {
             log.error("Unexpected error during authentication for user: {}", loginRequest.getUsername(), e);
-            throw new RuntimeException("An unexpected error occurred during authentication", e);
+            throw new AuthException("An unexpected error occurred during authentication");
         }
     }
 
@@ -74,24 +68,14 @@ public class AuthService {
         return new RegisterResponse("User registered successfully");
     }
 
-    public void validateToken(String jwt) throws AuthException {
-        try{
-            // extract username from jwt
-            String username = jwtUtil.extractUsername(jwt);
+    public ValidTokenResponse validateToken(String token) {
+        String username = jwtUtil.extractUsername(token);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // load user details from username
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            // validate the jwt
-            if(jwtUtil.validateToken(jwt, userDetails)){
-                log.info("Token for user {} is valid", username);
-            } else {
-                log.error("Token for user {} is invalid", username);
-                throw new AuthException("Invalid token");
-            };
-        } catch (Exception e) {
-            throw new AuthException("Invalid token" + e.getMessage());
-        }
+        boolean validToken = jwtUtil.validateToken(token, userDetails);
+        return ValidTokenResponse.builder().
+                valid(validToken).
+                build();
     }
 
 }

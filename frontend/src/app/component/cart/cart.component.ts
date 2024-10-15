@@ -3,7 +3,6 @@ import { Observable } from 'rxjs';
 import { CartItem } from '../../dto/CartItem';
 import { OrderService } from '../../service/order.service';
 import { Router } from '@angular/router';
-import { OrderItemRequest, OrderRequest } from '../../dto/order/order-request';
 import { CartService } from '../../service/cart.service';
 import { environment } from '../../../environments/enviroment';
 

@@ -1,6 +1,7 @@
 package com.vanhuy.api_gateway.component;
 
 import com.vanhuy.api_gateway.client.AuthClient;
+import com.vanhuy.api_gateway.dto.ValidTokenResponse;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -45,22 +46,21 @@ public class ConfigGlobalFilter implements GlobalFilter , Ordered {
         // Check for Authorization header
         String authorizationHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ") || authorizationHeader.isEmpty()) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete(); // Block the request if no JWT
         }
 
-        // Validate the JWT
-        String jwt = authorizationHeader.substring(7);
+        String token = authorizationHeader.substring(7);
 
-        try {
-            // Call user-service via Feign to validate the token
-            authClient.validateToken(jwt);
-            return chain.filter(exchange); // Token is valid, proceed with the request
-        } catch (FeignException e) {
+        ValidTokenResponse validateToken = authClient.validateToken(token).getBody();
+
+        if (!validateToken.isValid()) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete(); // Block the request if JWT is invalid
         }
+
+        return chain.filter(exchange); // Allow the request to pass through
     }
 
     @Override

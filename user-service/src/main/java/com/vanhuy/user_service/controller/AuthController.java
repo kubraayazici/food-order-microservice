@@ -3,6 +3,7 @@ package com.vanhuy.user_service.controller;
 import com.vanhuy.user_service.dto.AuthResponse;
 import com.vanhuy.user_service.dto.LoginRequest;
 import com.vanhuy.user_service.dto.RegisterRequest;
+import com.vanhuy.user_service.dto.ValidTokenResponse;
 import com.vanhuy.user_service.exception.AuthException;
 import com.vanhuy.user_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -18,16 +19,11 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) throws AuthException {
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
 
-        try{
         AuthResponse response = authService.authenticate(loginRequest);
         log.info("Login successful for user: {}", loginRequest.getUsername());
         return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Login failed for user: {}", loginRequest.getUsername(), e);
-            throw e;
-        }
     }
 
     @PostMapping("/register")
@@ -35,9 +31,9 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(registerRequest));
     }
 
-    @GetMapping("/validateToken")
-    public ResponseEntity<?> validateToken(@RequestParam("token") String jwt) throws AuthException {
-        authService.validateToken(jwt);
-        return ResponseEntity.ok("Token is valid");
+    @PostMapping("/validateToken")
+    public ResponseEntity<ValidTokenResponse> validateToken(@RequestParam String token) throws AuthException {
+        ValidTokenResponse isValid = authService.validateToken(token);
+        return ResponseEntity.ok(isValid);
     }
 }

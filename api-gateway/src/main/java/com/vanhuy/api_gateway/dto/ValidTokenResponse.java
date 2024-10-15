@@ -1,12 +1,17 @@
-package com.vanhuy.user_service.dto;
+package com.vanhuy.api_gateway.dto;
 
-import lombok.*;
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Getter
-@Setter
 public class ValidTokenResponse {
     boolean valid;
+
+    public ValidTokenResponse(boolean valid) {
+        this.valid = valid;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
 }

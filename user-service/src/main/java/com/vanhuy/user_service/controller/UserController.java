@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer userId) {
-        return ResponseEntity.ok(userService.getUserById(userId));
+    @GetMapping("/{username}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable String username) {
+        return ResponseEntity.ok(userService.getByUsername(username));
     }
 
     @DeleteMapping("/{userId}")
