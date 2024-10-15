@@ -1,12 +1,11 @@
 package com.vanhuy.api_gateway.component;
 
-import com.vanhuy.api_gateway.client.AuthClient;
 import com.vanhuy.api_gateway.dto.ValidTokenResponse;
-import feign.FeignException;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.vanhuy.api_gateway.service.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,57 +13,79 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Component
-public class ConfigGlobalFilter implements GlobalFilter , Ordered {
+public class ConfigGlobalFilter implements GlobalFilter, Ordered {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigGlobalFilter.class);
 
-    @Autowired
-    @Lazy
-    private AuthClient authClient;
-
-    private static final String[]  publicEndpoints = {
+    private final AuthService authService;
+    private static final List<String> PUBLIC_ENDPOINTS = List.of(
             "/api/v1/auth/login",
             "/api/v1/auth/register",
-            "/aggregate/**",
-            "/swagger-ui/**",
-            "/api-docs/**",
+            "/aggregate/",
+            "/swagger-ui/",
+            "/api-docs/",
             "/api/v1/restaurants",
-            "/api/v1/menu-items",
-            "/api/v1/restaurants/api-docs"
-    };
+            "/api/v1/menu-items"
+    );
+
+    public ConfigGlobalFilter(AuthService authService) {
+        this.authService = authService;
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-
         String path = exchange.getRequest().getURI().getPath();
 
-        for (String publicEndpoint : publicEndpoints) {
-            if (path.contains(publicEndpoint)) {
-                return chain.filter(exchange); // Allow the request to pass through
+        if (isPublicEndpoint(path)) {
+            return chain.filter(exchange);
+        }
+
+        String token = extractToken(exchange);
+        if (token == null) {
+            return handleUnauthorized(exchange);
+        }
+
+        try {
+            ValidTokenResponse validateToken = authService.validateToken(token);
+            if (validateToken == null || !validateToken.isValid()) {
+                logger.warn("Invalid token: {}", token);
+                return handleUnauthorized(exchange);
             }
+        } catch (RuntimeException e) {
+            // Log the error
+            logger.error("Error during token validation", e);
+            return handleServerError(exchange , e);
         }
-
-        // Check for Authorization header
-        String authorizationHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ") || authorizationHeader.isEmpty()) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete(); // Block the request if no JWT
-        }
-
-        String token = authorizationHeader.substring(7);
-
-        ValidTokenResponse validateToken = authClient.validateToken(token).getBody();
-
-        if (!validateToken.isValid()) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete(); // Block the request if JWT is invalid
-        }
-
-        return chain.filter(exchange); // Allow the request to pass through
+        return chain.filter(exchange);
     }
 
     @Override
     public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE; // Ensure the filter runs early
+        return Ordered.HIGHEST_PRECEDENCE;
+    }
+
+    private boolean isPublicEndpoint(String path) {
+        return PUBLIC_ENDPOINTS.stream().anyMatch(path::startsWith);
+    }
+
+    private String extractToken(ServerWebExchange exchange) {
+        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+
+    private Mono<Void> handleUnauthorized(ServerWebExchange exchange) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        return exchange.getResponse().setComplete();
+    }
+
+    private Mono<Void> handleServerError(ServerWebExchange exchange, Throwable e) {
+        logger.error("Server error during request processing", e);
+        exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+        return exchange.getResponse().setComplete();
     }
 }

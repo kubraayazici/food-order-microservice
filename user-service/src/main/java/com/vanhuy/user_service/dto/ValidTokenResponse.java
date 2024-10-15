@@ -8,5 +8,5 @@ import lombok.*;
 @Getter
 @Setter
 public class ValidTokenResponse {
-    boolean valid;
+    private boolean valid;
 }

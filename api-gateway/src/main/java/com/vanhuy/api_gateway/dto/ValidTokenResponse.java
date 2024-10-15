@@ -1,9 +1,12 @@
 package com.vanhuy.api_gateway.dto;
 
 public class ValidTokenResponse {
-    boolean valid;
+    private boolean valid;
 
-    public ValidTokenResponse(boolean valid) {
+    // Default constructor
+    public ValidTokenResponse() {}
+
+    public ValidTokenResponse(Boolean valid) {
         this.valid = valid;
     }
 

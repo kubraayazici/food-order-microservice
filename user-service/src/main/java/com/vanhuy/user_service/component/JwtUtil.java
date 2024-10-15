@@ -1,10 +1,11 @@
 package com.vanhuy.user_service.component;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,8 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
+
+    private final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     @Value("${jwt.secretKey}")
     private String secretKey;
 
@@ -67,5 +70,20 @@ public class JwtUtil {
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            // Parse JWT token
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            return true;
+        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
+            logger.error("Invalid JWT signature: {}", ex.getMessage());
+        } catch (ExpiredJwtException ex) {
+            logger.error("Expired JWT token: {}", ex.getMessage());
+        } catch (Exception ex) {
+            logger.error("Invalid JWT token: {}", ex.getMessage());
+        }
+        return false;
     }
 }

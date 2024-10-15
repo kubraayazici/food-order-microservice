@@ -6,8 +6,10 @@ import com.vanhuy.user_service.exception.AuthException;
 import com.vanhuy.user_service.exception.UserNotFoundException;
 import com.vanhuy.user_service.model.User;
 import com.vanhuy.user_service.repository.UserRepository;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +25,10 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
+
+    @Value("${jwt.secretKey}")
+    private String secretKey;
+
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
@@ -66,16 +72,6 @@ public class AuthService {
         userRepository.save(user);
 
         return new RegisterResponse("User registered successfully");
-    }
-
-    public ValidTokenResponse validateToken(String token) {
-        String username = jwtUtil.extractUsername(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-        boolean validToken = jwtUtil.validateToken(token, userDetails);
-        return ValidTokenResponse.builder().
-                valid(validToken).
-                build();
     }
 
 }
