@@ -6,6 +6,8 @@ import { CartComponent } from './component/cart/cart.component';
 import { OrderConfirmationComponent } from './component/order-confirmation/order-confirmation.component';
 import { ShippingComponent } from './component/shipping/shipping.component';
 import { LoginComponent } from './component/login/login.component';
+import { ProfileComponent } from './component/profile/profile.component';
+import { AuthInterceptor } from './interceptor/auth-interceptor.interceptor';
 
 const routes: Routes = [
   { path: '', component: ListRestaurantComponent },
@@ -13,7 +15,8 @@ const routes: Routes = [
   { path : 'cart', component: CartComponent },
   { path: 'order-confirmation/:orderId', component: OrderConfirmationComponent },
   { path: 'shipping', component: ShippingComponent },
-  { path: 'login', component: LoginComponent }
+  { path: 'login', component: LoginComponent },
+  { path: 'profile', component: ProfileComponent }
 ];
 
 @NgModule({

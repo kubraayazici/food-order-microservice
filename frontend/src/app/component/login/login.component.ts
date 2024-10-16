@@ -14,7 +14,6 @@ export class LoginComponent {
   password: string = '';
   error: string = '';
 
-
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
@@ -47,19 +46,19 @@ export class LoginComponent {
     );
   }
 
- // Method to check if any field is invalid and touched
- isFieldInvalid(field: string): boolean {
-  const control = this.loginForm.get(field);
-  return control ? control.invalid && control.touched : false;
-}
-
-// Optionally, a method to get error message for specific validation rules
-getFieldError(field: string): string | null {
-  const control = this.loginForm.get(field);
-  if (control?.hasError('required')) {
-    return `${field} is required`;
+  // Method to check if any field is invalid and touched
+  isFieldInvalid(field: string): boolean {
+    const control = this.loginForm.get(field);
+    return control ? control.invalid && control.touched : false;
   }
-  return null;
-}
+
+  // Optionally, a method to get error message for specific validation rules
+  getFieldError(field: string): string | null {
+    const control = this.loginForm.get(field);
+    if (control?.hasError('required')) {
+      return `${field} is required`;
+    }
+    return null;
+  }
 
 }

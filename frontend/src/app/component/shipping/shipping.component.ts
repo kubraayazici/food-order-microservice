@@ -7,6 +7,7 @@ import { CartService } from '../../service/cart.service';
 import { CartItem } from '../../dto/CartItem';
 import { Observable, map, switchMap, take } from 'rxjs';
 import { environment } from '../../../environments/enviroment';
+import { UserService } from '../../service/user.service';
 
 @Component({
   selector: 'app-shipping',
@@ -19,15 +20,17 @@ export class ShippingComponent implements OnInit {
   cartItems$: Observable<CartItem[]> | undefined;
   total$: Observable<number> | undefined;
   baseUrl = environment.baseUrl;
+  userId! : number ;
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
     private orderService: OrderService,
-    private cartService: CartService
-
+    private cartService: CartService,
+    private UserService: UserService,
   ) { }
 
   ngOnInit(): void {
+    this.getUserId();
     this.shippingForm = this.formBuilder.group({
       recipientName: ['', Validators.required],
       contactEmail: ['', Validators.required],
@@ -50,7 +53,7 @@ export class ShippingComponent implements OnInit {
         }))),
         switchMap(orderItems => {  // Switch to the orderService.createOrder Observable
           const orderRequest: OrderRequest = {
-            userId: 1,
+            userId: 5,
             ...this.shippingForm.value,
             items: orderItems
           };
@@ -67,4 +70,13 @@ export class ShippingComponent implements OnInit {
       });
     }
   }
+
+  getUserId() {
+    this.UserService.user$.subscribe(user => {
+      this.userId = user?.userId!;
+      console.log(this.userId);
+      
+    });
+  }
+
 }

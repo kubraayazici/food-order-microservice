@@ -1,9 +1,11 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, switchMap, tap, throwError } from 'rxjs';
 import { AuthResponse } from '../dto/auth/AuthResponse';
 import { environment } from '../../environments/enviroment';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { UserService } from './user.service';
+import { UserDTO } from '../dto/auth/UserDTO';
 
 @Injectable({
   providedIn: 'root'
@@ -20,15 +22,26 @@ export class AuthService {
   private currentUser = new BehaviorSubject<string | null>(this.getUsernameFromToken());
   currentUser$ = this.currentUser.asObservable();
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient
+    ,private userService: UserService,
+  ) { 
+  }
 
   login(username: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.authUrl}/login`, { username, password })
       .pipe(
         tap(response => {
           this.setToken(response.token);
-          this.currentUser.next(username);
+          const decodedUsername = this.getUsernameFromToken();
+          
+          this.currentUser.next(decodedUsername);
           this.loggedIn.next(true);
+          
+          if (decodedUsername) {
+            this.userService.getUserByUsername(decodedUsername).subscribe(user => {
+              this.userService.setUserInfo(user);  // Store user information in the UserService
+            });
+          }
         }),
         catchError(this.handleError)
       );
@@ -64,6 +77,7 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     this.loggedIn.next(false);
     this.currentUser.next(null);
+    this.userService.clearUserInfo();
   }
 
   getUsernameFromToken(): string | null {
