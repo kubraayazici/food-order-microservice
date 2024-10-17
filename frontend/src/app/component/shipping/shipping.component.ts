@@ -53,7 +53,7 @@ export class ShippingComponent implements OnInit {
         }))),
         switchMap(orderItems => {  // Switch to the orderService.createOrder Observable
           const orderRequest: OrderRequest = {
-            userId: 5,
+            userId: this.userId,
             ...this.shippingForm.value,
             items: orderItems
           };
@@ -75,7 +75,6 @@ export class ShippingComponent implements OnInit {
     this.UserService.user$.subscribe(user => {
       this.userId = user?.userId!;
       console.log(this.userId);
-      
     });
   }
 

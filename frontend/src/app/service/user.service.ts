@@ -13,9 +13,6 @@ export class UserService {
   private userSubject  = new BehaviorSubject<UserDTO | null>(null);
   user$ = this.userSubject.asObservable();
 
-  // private userIdSubject = new BehaviorSubject<number | null>(null);
-  // userId$ = this.userIdSubject.asObservable();
-
   constructor(
     private http: HttpClient
   ) { }

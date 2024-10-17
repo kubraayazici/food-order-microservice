@@ -5,6 +5,7 @@ import { OrderService } from '../../service/order.service';
 import { Router } from '@angular/router';
 import { CartService } from '../../service/cart.service';
 import { environment } from '../../../environments/enviroment';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
   selector: 'app-cart',
@@ -21,7 +22,8 @@ export class CartComponent implements OnInit {
   constructor(
     private orderService: OrderService,
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private authService: AuthService
   ) {
     this.cartItems$ = this.cartService.getCartItems();
   }
@@ -52,6 +54,10 @@ export class CartComponent implements OnInit {
       this.checkoutError = 'Your cart is empty. Please add items before checking out.';
       return;
     }
-    this.router.navigate(['/shipping']);
+    if(this.authService.isLoggedIn()) {
+      this.router.navigate(['/shipping']);
+    }else{
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/shipping' } });
+    }
   }
 }

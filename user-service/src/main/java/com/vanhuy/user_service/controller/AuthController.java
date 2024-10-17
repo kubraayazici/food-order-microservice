@@ -6,6 +6,7 @@ import com.vanhuy.user_service.dto.LoginRequest;
 import com.vanhuy.user_service.dto.RegisterRequest;
 import com.vanhuy.user_service.dto.ValidTokenResponse;
 import com.vanhuy.user_service.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
         return ResponseEntity.ok(authService.register(registerRequest));
     }
 

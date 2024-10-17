@@ -7,16 +7,16 @@ import { OrderConfirmationComponent } from './component/order-confirmation/order
 import { ShippingComponent } from './component/shipping/shipping.component';
 import { LoginComponent } from './component/login/login.component';
 import { ProfileComponent } from './component/profile/profile.component';
-import { AuthInterceptor } from './interceptor/auth-interceptor.interceptor';
+import { AuthGuard } from './guard/auth.guard';
 
 const routes: Routes = [
   { path: '', component: ListRestaurantComponent },
   { path: 'restaurant/:id', component: RestaurantDetailComponent },
   { path : 'cart', component: CartComponent },
-  { path: 'order-confirmation/:orderId', component: OrderConfirmationComponent },
-  { path: 'shipping', component: ShippingComponent },
+  { path: 'order-confirmation/:orderId', component: OrderConfirmationComponent ,canActivate: [AuthGuard]},
+  { path: 'shipping', component: ShippingComponent ,canActivate: [AuthGuard]},
   { path: 'login', component: LoginComponent },
-  { path: 'profile', component: ProfileComponent }
+  { path: 'profile', component: ProfileComponent  ,canActivate: [AuthGuard]}
 ];
 
 @NgModule({

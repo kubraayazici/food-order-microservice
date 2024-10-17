@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router  } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -13,16 +13,19 @@ export class LoginComponent {
   username: string = '';
   password: string = '';
   error: string = '';
+  returnUrl :string = '/';
 
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
+    private route: ActivatedRoute,
     private router: Router
   ) {
     this.loginForm = this.formBuilder.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]]
     });
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
 
   onSubmit() {
@@ -34,15 +37,14 @@ export class LoginComponent {
 
     const { username, password } = this.loginForm.value;
 
-    this.authService.login(username, password).subscribe(
-      response => {
-        this.router.navigate(['/']);
+    this.authService.login(username, password).subscribe({
+      next :() => {
+        this.router.navigateByUrl(this.returnUrl);
       },
-      error => {
+      error: (error) => {
+        // Handle login error
         console.error('Login failed', error);
-        this.error = 'Invalid username or password';
-        // Handle error (show message to user)
-      }
+      }}
     );
   }
 

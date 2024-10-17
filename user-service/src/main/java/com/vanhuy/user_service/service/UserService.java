@@ -24,7 +24,7 @@ public class UserService {
         return toUserDTO(user);
     }
 
-    @CacheEvict(value = "users", key = "#user.username") // Clear cache when user deleted
+//    @CacheEvict(value = "users", key = "#user.username") // Clear cache when user deleted
     @Transactional
     public void deleteUserById(Integer userId) {
        try {

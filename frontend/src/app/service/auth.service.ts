@@ -46,6 +46,10 @@ export class AuthService {
         catchError(this.handleError)
       );
   }
+
+  regiter(userDTO : UserDTO ): Observable<any> {
+    return this.http.post(`${this.authUrl}/register`, userDTO);
+  }
   
   private setToken(token: string) {
     localStorage.setItem(this.tokenKey, token);
@@ -59,6 +63,8 @@ export class AuthService {
     const token = this.getToken();
     return token ? !this.jwtHelper.isTokenExpired(token) : false;
   }
+
+
 
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An error occurred';

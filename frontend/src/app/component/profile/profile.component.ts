@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { UserDTO } from '../../dto/auth/UserDTO';
-import { Subscription } from 'rxjs';
 import { UserService } from '../../service/user.service';
 
 @Component({
