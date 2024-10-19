@@ -6,10 +6,11 @@ import com.vanhuy.user_service.exception.AuthException;
 import com.vanhuy.user_service.exception.UserNotFoundException;
 import com.vanhuy.user_service.model.User;
 import com.vanhuy.user_service.repository.UserRepository;
-import io.jsonwebtoken.Jwts;
+import com.vanhuy.user_service.service.kafka.EmailProducerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,14 +27,11 @@ import java.util.Collections;
 @Slf4j
 public class AuthService {
 
-    @Value("${jwt.secretKey}")
-    private String secretKey;
-
-    private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailProducerService emailProducerService;
 
     public AuthResponse authenticate(LoginRequest loginRequest) {
         try {
@@ -71,7 +69,19 @@ public class AuthService {
         log.info("User {} registered successfully", registerRequest);
         userRepository.save(user);
 
+
+        emailProducerService.sendEmail(
+                new EmailRequest(registerRequest.getEmail(),
+                        "Welcome to our platform",
+                        "You have successfully registered to our platform")
+        );
+
         return new RegisterResponse("User registered successfully");
     }
+
+
+
+
+
 
 }

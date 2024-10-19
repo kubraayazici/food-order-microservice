@@ -1,11 +1,9 @@
 package com.vanhuy.user_service.controller;
 
 import com.vanhuy.user_service.component.JwtUtil;
-import com.vanhuy.user_service.dto.AuthResponse;
-import com.vanhuy.user_service.dto.LoginRequest;
-import com.vanhuy.user_service.dto.RegisterRequest;
-import com.vanhuy.user_service.dto.ValidTokenResponse;
+import com.vanhuy.user_service.dto.*;
 import com.vanhuy.user_service.service.AuthService;
+import com.vanhuy.user_service.service.kafka.EmailProducerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final EmailProducerService emailProducerService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
@@ -39,4 +38,10 @@ public class AuthController {
         ValidTokenResponse response = new ValidTokenResponse(valid);
         return ResponseEntity.ok(response);
     }
+
+//    @GetMapping("/trigger-email")
+//    public String triggerEmail(@RequestBody EmailRequest emailRequest) {
+//        emailProducerService.sendEmail(emailRequest);
+//        return "Email event sent!";
+//    }
 }
