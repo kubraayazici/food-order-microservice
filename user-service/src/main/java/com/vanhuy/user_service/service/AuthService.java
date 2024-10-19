@@ -6,19 +6,16 @@ import com.vanhuy.user_service.exception.AuthException;
 import com.vanhuy.user_service.exception.UserNotFoundException;
 import com.vanhuy.user_service.model.User;
 import com.vanhuy.user_service.repository.UserRepository;
-import com.vanhuy.user_service.service.kafka.EmailProducerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 
@@ -31,7 +28,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailProducerService emailProducerService;
+    private final RestTemplate restTemplate;
 
     public AuthResponse authenticate(LoginRequest loginRequest) {
         try {
@@ -69,14 +66,21 @@ public class AuthService {
         log.info("User {} registered successfully", registerRequest);
         userRepository.save(user);
 
+        EmailRequest emailRequest = EmailRequest.builder()
+                .toEmail(registerRequest.getEmail())
+                .username(registerRequest.getUsername())
+                .build();
 
-        emailProducerService.sendEmail(
-                new EmailRequest(registerRequest.getEmail(),
-                        "Welcome to our platform",
-                        "You have successfully registered to our platform")
-        );
+        sendWelcomeEmail(emailRequest);
 
         return new RegisterResponse("User registered successfully");
+    }
+
+    private void sendWelcomeEmail(EmailRequest emailRequest) {
+        String urlNotificationService = "http://localhost:8084/api/v1/notification/send-email";
+        restTemplate.postForObject(urlNotificationService,
+                emailRequest, String.class);
+
     }
 
 

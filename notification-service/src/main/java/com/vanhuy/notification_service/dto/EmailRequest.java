@@ -1,4 +1,4 @@
-package com.vanhuy.user_service.dto;
+package com.vanhuy.notification_service.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

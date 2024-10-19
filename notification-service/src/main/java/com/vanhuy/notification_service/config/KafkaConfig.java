@@ -1,6 +1,6 @@
-package com.vanhuy.user_service.config;
+package com.vanhuy.notification_service.config;
 
-import com.vanhuy.user_service.dto.EmailRequest;
+import com.vanhuy.notification_service.dto.EmailRequest;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +30,6 @@ public class KafkaConfig {
 
     @Bean
     public KafkaTemplate<String, EmailRequest> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+        return new KafkaTemplate<String, EmailRequest>(producerFactory());
     }
 }

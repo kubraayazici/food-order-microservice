@@ -1,7 +1,6 @@
 package com.vanhuy.user_service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vanhuy.user_service.dto.EmailRequest;
 import com.vanhuy.user_service.dto.RegisterRequest;
 import com.vanhuy.user_service.dto.RegisterResponse;
 import com.vanhuy.user_service.service.AuthService;
