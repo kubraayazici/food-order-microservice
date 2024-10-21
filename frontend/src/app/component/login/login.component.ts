@@ -29,6 +29,7 @@ export class LoginComponent {
   }
 
   onSubmit() {
+    this.error = '';
     // Mark all fields as touched to trigger validation messages
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -43,6 +44,7 @@ export class LoginComponent {
       },
       error: (error) => {
         // Handle login error
+        this.error = error.message;
         console.error('Login failed', error);
       }}
     );

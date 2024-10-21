@@ -6,6 +6,7 @@ import com.vanhuy.restaurant_service.model.Restaurant;
 import com.vanhuy.restaurant_service.repository.MenuItemRepository;
 import com.vanhuy.restaurant_service.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class RestaurantService {
         return toDTO(restaurant);
     }
 
+
     public List<RestaurantDTO> getAllRestaurants() {
         return restaurantRepository.findAll().stream()
                 .map(this::toDTO)
@@ -50,6 +52,7 @@ public class RestaurantService {
         return toDTO(restaurant);
     }
 
+    @Cacheable(value = "restaurants" , key = "#pageable.pageNumber")
     public Page<RestaurantDTO> getRestaurantsByPage(Pageable pageable) {
         return restaurantRepository.findAll(pageable)
                 .map(this::toDTO);
@@ -63,6 +66,7 @@ public class RestaurantService {
         );
     }
 
+    @Cacheable(value = "restaurant", key = "#restaurantId")
     public Restaurant getRestaurantById(Integer restaurantId) {
         return restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant not found"));

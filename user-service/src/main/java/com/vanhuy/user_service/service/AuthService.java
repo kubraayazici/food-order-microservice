@@ -8,6 +8,9 @@ import com.vanhuy.user_service.model.User;
 import com.vanhuy.user_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,9 +18,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
 
+//    @Cacheable(value = "authTokens", key = "#loginRequest.username", unless = "#result == null")
     public AuthResponse authenticate(LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -49,6 +55,8 @@ public class AuthService {
         }
     }
 
+    @Transactional
+//    @CacheEvict(value = "authTokens", key = "#registerRequest.username")
     public RegisterResponse register (RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
             throw new UserNotFoundException("Username is already taken");
@@ -63,29 +71,29 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRoles(Collections.singleton("ROLE_USER"));
 
-        log.info("User {} registered successfully", registerRequest);
+        log.info("User {} registered successfully", registerRequest.getUsername());
         userRepository.save(user);
 
-        EmailRequest emailRequest = EmailRequest.builder()
-                .toEmail(registerRequest.getEmail())
-                .username(registerRequest.getUsername())
-                .build();
-
-        sendWelcomeEmail(emailRequest);
+        // tach biệt việc gửi email với việc trả về response
+        CompletableFuture.runAsync(() -> sendWelcomeEmail(new EmailRequest(registerRequest.getEmail(), registerRequest.getUsername())))
+                .exceptionally(ex -> {
+                    log.error("Failed to send welcome email to {}", registerRequest.getEmail(), ex);
+                    return null;
+                });
 
         return new RegisterResponse("User registered successfully");
+        
     }
 
     private void sendWelcomeEmail(EmailRequest emailRequest) {
+        try{
         String urlNotificationService = "http://localhost:8084/api/v1/notification/send-email";
         restTemplate.postForObject(urlNotificationService,
                 emailRequest, String.class);
-
+        log.info("Welcome email sent successfully to {}", emailRequest.getToEmail());
+        } catch (Exception e) {
+            log.error("Failed to send welcome email to {}", emailRequest.getToEmail(), e);
+        }
     }
-
-
-
-
-
 
 }

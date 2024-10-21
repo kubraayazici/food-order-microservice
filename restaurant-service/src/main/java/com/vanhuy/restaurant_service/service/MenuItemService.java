@@ -7,6 +7,7 @@ import com.vanhuy.restaurant_service.model.Restaurant;
 import com.vanhuy.restaurant_service.repository.MenuItemRepository;
 import com.vanhuy.restaurant_service.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +22,7 @@ public class MenuItemService {
     private final ImageService imageService;
     private final RestaurantRepository restaurantRepository;
 
+    @Cacheable(value = "menuItems", key = "#restaurant.restaurantId")
     public List<MenuItemDTO> getMenuItemsByRestaurantId(Restaurant restaurant) {
         List<MenuItem> menuItems = menuItemRepository.findByRestaurant(restaurant);
         return menuItems.stream()

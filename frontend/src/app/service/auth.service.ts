@@ -12,6 +12,7 @@ import { UserDTO } from '../dto/auth/UserDTO';
 })
 export class AuthService {
   private authUrl = environment.baseUrl + '/auth';
+  // private authUrl = 'http://localhost:8081/api/v1/auth';
   private tokenKey = 'auth_token';
   private jwtHelper = new JwtHelperService();
 
@@ -47,8 +48,14 @@ export class AuthService {
       );
   }
 
-  regiter(userDTO : UserDTO ): Observable<any> {
-    return this.http.post(`${this.authUrl}/register`, userDTO);
+  register(username : string , email :string, password : string) : Observable<any> {
+    return this.http.post(`${this.authUrl}/register`, {
+      username,
+      email,
+      password
+    }).pipe(
+      catchError(this.handleError)
+    );
   }
   
   private setToken(token: string) {
@@ -64,16 +71,22 @@ export class AuthService {
     return token ? !this.jwtHelper.isTokenExpired(token) : false;
   }
   
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'An error occurred';
+  // Error handler
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = '';
+
     if (error.error instanceof ErrorEvent) {
       // Client-side error
-      errorMessage = error.error.message;
+      errorMessage = `Client-side error: ${error.error.message}`;
     } else {
       // Server-side error
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+      const errorResponse = error.error;  // This is where your ErrorResponse will be
+      // errorMessage = `Server-side error: ${errorResponse.message} (Status: ${errorResponse.status})\nDetails: ${errorResponse.details}`;
+      errorMessage = errorResponse.message;
     }
-    console.error(errorMessage);
+
+    // Optionally, you can log or display the error message here
+    // console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 
