@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -43,7 +45,7 @@ public class EmailService {
     }
 
 
-    public void sendForgotPasswordEmail(String toEmail, String code) {
+    public void sendForgotPasswordEmail(String toEmail, Map<String, String> templateData) {
         try {
             MimeMessage msg = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, true);
@@ -54,7 +56,8 @@ public class EmailService {
 
             // create context
             Context context = new Context();
-            context.setVariable("code", code);
+            context.setVariable("resetLink", templateData.get("resetLink"));
+            context.setVariable("expirationHours", templateData.get("expirationHours"));
 
             // process template
             String html = templateEngine.process("forgot-password", context);
@@ -66,4 +69,6 @@ public class EmailService {
             e.printStackTrace();
         }
     }
+
+
 }

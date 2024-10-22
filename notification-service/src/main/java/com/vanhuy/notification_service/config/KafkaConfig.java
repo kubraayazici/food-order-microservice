@@ -1,6 +1,5 @@
 package com.vanhuy.notification_service.config;
 
-import com.vanhuy.notification_service.dto.EmailRequest;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;

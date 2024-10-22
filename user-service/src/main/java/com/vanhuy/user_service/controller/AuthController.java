@@ -2,7 +2,11 @@ package com.vanhuy.user_service.controller;
 
 import com.vanhuy.user_service.component.JwtUtil;
 import com.vanhuy.user_service.dto.*;
+import com.vanhuy.user_service.dto.resetPassword.ForgotPasswordRequest;
+import com.vanhuy.user_service.dto.resetPassword.PasswordResetResponse;
+import com.vanhuy.user_service.dto.resetPassword.ResetPasswordRequest;
 import com.vanhuy.user_service.service.AuthService;
+import com.vanhuy.user_service.service.PasswordResetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
@@ -38,18 +43,17 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestParam("email") String email) {
-        PasswordResetResponse response=  authService.sendForgotPasswordEmail(email);
-        return ResponseEntity.ok(
-                "Code sent to email: " + email
-        );
+
+    @PostMapping("/forgot")
+    public ResponseEntity<PasswordResetResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        PasswordResetResponse response =  passwordResetService.initiatePasswordReset(request);
+        return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/reset")
+    public ResponseEntity<PasswordResetResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        PasswordResetResponse response=  passwordResetService.resetPassword(request);
+        return ResponseEntity.ok(response);
+    }
 
-//    @GetMapping("/trigger-email")
-//    public String triggerEmail(@RequestBody EmailRequest emailRequest) {
-//        emailProducerService.sendEmail(emailRequest);
-//        return "Emaixl event sent!";
-//    }
 }

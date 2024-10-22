@@ -1,8 +1,6 @@
 package com.vanhuy.notification_service.service;
 
-import com.vanhuy.notification_service.dto.EmailRequest;
-import com.vanhuy.notification_service.dto.PasswordResetRequest;
-import com.vanhuy.notification_service.dto.PasswordResetResponse;
+import com.vanhuy.notification_service.dto.EmailResetRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +14,9 @@ public class ForgotPasswordKafkaConsumer {
     private final EmailService emailService;
 
     @KafkaListener(topics = "forgot-password-topic", groupId = "email-group")
-    public void listen(PasswordResetRequest request) {
+    public void listen(EmailResetRequest request) {
         try {
-            emailService.sendForgotPasswordEmail(request.getEmail(), request.getCode());
+            emailService.sendForgotPasswordEmail(request.getToEmail() , request.getTemplateData());
             logger.info("Forgot password email sent successfully");
 
         } catch (Exception e) {

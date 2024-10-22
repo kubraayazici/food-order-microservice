@@ -1,5 +1,6 @@
 package com.vanhuy.user_service.service;
 
+import com.vanhuy.user_service.client.NotificationClient;
 import com.vanhuy.user_service.component.JwtUtil;
 import com.vanhuy.user_service.dto.*;
 import com.vanhuy.user_service.exception.AuthException;
@@ -9,11 +10,6 @@ import com.vanhuy.user_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,7 +18,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -36,10 +31,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RestTemplate restTemplate;
-
-    @Value("${notification.service.url}")
-    private String notificationServiceUrl;
+    private final NotificationClient notificationClient;
 
     public AuthResponse authenticate(LoginRequest loginRequest) {
         try {
@@ -79,7 +71,7 @@ public class AuthService {
         userRepository.save(user);
 
         // tach biệt việc gửi email với việc trả về response
-        CompletableFuture.runAsync(() -> sendWelcomeEmail(new EmailRequest(registerRequest.getEmail(), registerRequest.getUsername())))
+        CompletableFuture.runAsync(() -> notificationClient.sendWelcomeEmail(new EmailRequest(registerRequest.getEmail(), registerRequest.getUsername())))
                 .exceptionally(ex -> {
                     log.error("Failed to send welcome email to {}", registerRequest.getEmail(), ex);
                     return null;
@@ -87,36 +79,6 @@ public class AuthService {
 
         return new RegisterResponse("User registered successfully");
         
-    }
-
-
-    private void sendWelcomeEmail(EmailRequest emailRequest) {
-        try{
-            String urlNotificationService = notificationServiceUrl + "/welcome-email";
-            restTemplate.postForEntity(urlNotificationService,
-                    emailRequest, String.class);
-            log.info("Welcome email sent successfully to {}", emailRequest.getToEmail());
-        } catch (Exception e) {
-            log.error("Failed to send welcome email to {}", emailRequest.getToEmail(), e);
-        }
-    }
-
-    public PasswordResetResponse sendForgotPasswordEmail(String email) {
-            User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("No user found with this email address"));
-
-            String urlNotificationService = notificationServiceUrl + "/forgot-password?email=" + email;
-            ResponseEntity<PasswordResetResponse> response = restTemplate.getForEntity(urlNotificationService,
-                   PasswordResetResponse.class);
-
-            if(response.getStatusCode() == HttpStatus.OK) {
-                log.info("Forgot password email sent successfully to {}", email);
-                return response.getBody();
-            }else {
-                log.error("Failed to send forgot password email to {}", email);
-                throw new AuthException("Failed to send forgot password email");
-            }
-
     }
 
 }
