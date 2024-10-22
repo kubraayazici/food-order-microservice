@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = "*")
 public class AuthController {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
@@ -36,6 +37,15 @@ public class AuthController {
         ValidTokenResponse response = new ValidTokenResponse(valid);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam("email") String email) {
+        PasswordResetResponse response=  authService.sendForgotPasswordEmail(email);
+        return ResponseEntity.ok(
+                "Code sent to email: " + email
+        );
+    }
+
 
 //    @GetMapping("/trigger-email")
 //    public String triggerEmail(@RequestBody EmailRequest emailRequest) {

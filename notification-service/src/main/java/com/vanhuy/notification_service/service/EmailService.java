@@ -41,4 +41,29 @@ public class EmailService {
             e.printStackTrace();
         }
     }
+
+
+    public void sendForgotPasswordEmail(String toEmail, String code) {
+        try {
+            MimeMessage msg = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(msg, true);
+
+            helper.setFrom(from);
+            helper.setTo(toEmail);
+            helper.setSubject("Reset your password");
+
+            // create context
+            Context context = new Context();
+            context.setVariable("code", code);
+
+            // process template
+            String html = templateEngine.process("forgot-password", context);
+
+            helper.setText(html, true);
+
+            javaMailSender.send(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

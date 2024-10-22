@@ -9,8 +9,11 @@ import com.vanhuy.user_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,7 +38,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
 
-//    @Cacheable(value = "authTokens", key = "#loginRequest.username", unless = "#result == null")
+    @Value("${notification.service.url}")
+    private String notificationServiceUrl;
+
     public AuthResponse authenticate(LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -56,7 +61,6 @@ public class AuthService {
     }
 
     @Transactional
-//    @CacheEvict(value = "authTokens", key = "#registerRequest.username")
     public RegisterResponse register (RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
             throw new UserNotFoundException("Username is already taken");
@@ -85,15 +89,34 @@ public class AuthService {
         
     }
 
+
     private void sendWelcomeEmail(EmailRequest emailRequest) {
         try{
-        String urlNotificationService = "http://localhost:8084/api/v1/notification/send-email";
-        restTemplate.postForObject(urlNotificationService,
-                emailRequest, String.class);
-        log.info("Welcome email sent successfully to {}", emailRequest.getToEmail());
+            String urlNotificationService = notificationServiceUrl + "/welcome-email";
+            restTemplate.postForEntity(urlNotificationService,
+                    emailRequest, String.class);
+            log.info("Welcome email sent successfully to {}", emailRequest.getToEmail());
         } catch (Exception e) {
             log.error("Failed to send welcome email to {}", emailRequest.getToEmail(), e);
         }
+    }
+
+    public PasswordResetResponse sendForgotPasswordEmail(String email) {
+            User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("No user found with this email address"));
+
+            String urlNotificationService = notificationServiceUrl + "/forgot-password?email=" + email;
+            ResponseEntity<PasswordResetResponse> response = restTemplate.getForEntity(urlNotificationService,
+                   PasswordResetResponse.class);
+
+            if(response.getStatusCode() == HttpStatus.OK) {
+                log.info("Forgot password email sent successfully to {}", email);
+                return response.getBody();
+            }else {
+                log.error("Failed to send forgot password email to {}", email);
+                throw new AuthException("Failed to send forgot password email");
+            }
+
     }
 
 }
