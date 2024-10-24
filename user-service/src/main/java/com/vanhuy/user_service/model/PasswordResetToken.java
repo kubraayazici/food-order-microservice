@@ -2,43 +2,41 @@ package com.vanhuy.user_service.model;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import java.time.Instant;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "password_reset_token")
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PasswordResetToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false ,unique = true)
     private String token;
 
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false)
-    private Instant expiryDate;
+    private LocalDateTime expiryDate;
 
     @Column(nullable = false)
     private boolean used = false;
 
-    public PasswordResetToken(User user) {
-        this.token = UUID.randomUUID().toString();
-        this.user = user ;
-        this.expiryDate = Instant.now().plusSeconds(24 * 60 * 60); // 24 hours
+    public PasswordResetToken(User user, String token) {
+        this.user = user;
+        this.token = token;
+        this.expiryDate = LocalDateTime.now().plusHours(24); // Token valid for 24 hours
     }
-
     public boolean isExpired() {
-        return Instant.now().isAfter(this.expiryDate);
+        return LocalDateTime.now().isAfter(this.expiryDate);
     }
 }

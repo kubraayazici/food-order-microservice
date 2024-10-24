@@ -9,6 +9,8 @@ import { LoginComponent } from './component/login/login.component';
 import { ProfileComponent } from './component/profile/profile.component';
 import { AuthGuard } from './guard/auth.guard';
 import { RegisterComponent } from './component/register/register.component';
+import { ForgotPasswordComponent } from './component/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './component/reset-password/reset-password.component';
 
 const routes: Routes = [
   { path: '', component: ListRestaurantComponent },
@@ -18,8 +20,9 @@ const routes: Routes = [
   { path: 'shipping', component: ShippingComponent ,canActivate: [AuthGuard]},
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'profile', component: ProfileComponent  ,canActivate: [AuthGuard]}
-
+  { path: 'profile', component: ProfileComponent  ,canActivate: [AuthGuard]},
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent }
 ];
 
 @NgModule({

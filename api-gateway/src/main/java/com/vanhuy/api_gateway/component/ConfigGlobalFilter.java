@@ -23,6 +23,8 @@ public class ConfigGlobalFilter implements GlobalFilter, Ordered {
     private static final List<String> PUBLIC_ENDPOINTS = List.of(
             "/api/v1/auth/login",
             "/api/v1/auth/register",
+            "/api/v1/auth/forgot",
+            "/api/v1/auth/reset",
             "/aggregate/",
             "/swagger-ui/",
             "/api-docs/",
@@ -56,7 +58,7 @@ public class ConfigGlobalFilter implements GlobalFilter, Ordered {
         } catch (RuntimeException e) {
             // Log the error
             logger.error("Error during token validation", e);
-            return handleServerError(exchange , e);
+            return handleServerError(exchange, e);
         }
         return chain.filter(exchange);
     }

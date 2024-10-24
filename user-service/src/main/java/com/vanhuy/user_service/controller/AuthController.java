@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class AuthController {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
@@ -42,7 +42,6 @@ public class AuthController {
         ValidTokenResponse response = new ValidTokenResponse(valid);
         return ResponseEntity.ok(response);
     }
-
 
     @PostMapping("/forgot")
     public ResponseEntity<PasswordResetResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {

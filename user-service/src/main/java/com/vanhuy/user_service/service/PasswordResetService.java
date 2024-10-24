@@ -17,6 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -33,17 +36,21 @@ public class PasswordResetService {
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // create password reset token
-            PasswordResetToken passwordResetToken = new PasswordResetToken(user);
-            passwordResetTokenRepo.save(passwordResetToken);
+            String token = UUID.randomUUID().toString();
+            // Create or update token
+            PasswordResetToken resetToken = passwordResetTokenRepo.findByUser(user)
+                    .orElseGet(() -> new PasswordResetToken(user, token));
 
-            // send email
-            notificationClient.sendPasswordResetEmail(user.getEmail(),  passwordResetToken.getToken());
+            resetToken.setToken(token);
+            resetToken.setExpiryDate(LocalDateTime.now().plusHours(24));
+            resetToken.setUsed(false);
 
-            return new PasswordResetResponse(
-                    "Password reset instructions have been sent to your email",
-                    true
-            );
+            passwordResetTokenRepo.save(resetToken);  // Save token
+
+            // Send email
+            notificationClient.sendPasswordResetEmail(user.getEmail(), resetToken.getToken());
+
+            return new PasswordResetResponse("Password reset instructions have been sent to your email", true);
         } catch (Exception e) {
             log.error("Failed to process password reset for email: {}", request.getEmail(), e);
             return new PasswordResetResponse(
@@ -57,7 +64,7 @@ public class PasswordResetService {
     public PasswordResetResponse resetPassword(ResetPasswordRequest request) {
         try {
             PasswordResetToken resetToken = passwordResetTokenRepo.findByToken(request.getToken())
-                    .orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
+                    .orElseThrow(() -> new InvalidTokenException("Invalid reset token. Try again !"));
 
             validateToken(resetToken);
 
@@ -84,10 +91,12 @@ public class PasswordResetService {
 
     private void validateToken(PasswordResetToken token) {
         if (token.isExpired()) {
-            throw new TokenExpiredException("Reset token has expired");
+            throw new TokenExpiredException("Reset token has expired . Try again !");
         }
         if (token.isUsed()) {
             throw new TokenAlreadyUsedException("Reset token has already been used");
         }
     }
+
+
 }
