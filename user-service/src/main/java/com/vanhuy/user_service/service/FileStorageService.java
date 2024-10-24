@@ -4,6 +4,7 @@ import com.vanhuy.user_service.config.FileStorageProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -22,8 +23,9 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class FileStorageService {
-    private Path fileStorageLocation;
+    private final Path fileStorageLocation;
 
+    @Autowired
     public FileStorageService (FileStorageProperties fileStorageProperties) {
         this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir())
                 .toAbsolutePath().normalize();
@@ -37,9 +39,17 @@ public class FileStorageService {
 
     public String storeFile(MultipartFile file) {
         try {
+            // Validate file name
+            if (file == null || file.getOriginalFilename() == null) {
+                throw new RuntimeException("Invalid file");
+            }
+
             String fileName = StringUtils.cleanPath(file.getOriginalFilename());
             String newFileName = UUID.randomUUID().toString() + "." +
                     FilenameUtils.getExtension(fileName);
+
+            // Create the target location if it doesn't exist
+            Files.createDirectories(this.fileStorageLocation);
 
             Path targetLocation = this.fileStorageLocation.resolve(newFileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);

@@ -24,11 +24,6 @@ public class UserController {
     private final UserService userService;
     private final FileStorageService fileStorageService;
 
-    @GetMapping("/{username}")
-    public ResponseEntity<UserDTO> getUserByUsername(@PathVariable String username) {
-        return ResponseEntity.ok(userService.getByUsername(username));
-    }
-
     @GetMapping("/profile")
     public ResponseEntity<ProfileResponse> getProfile(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userService.getProfile(user.getUserId()));
@@ -46,19 +41,15 @@ public class UserController {
             @Valid @RequestPart("profile") ProfileUpdateDTO profileDTO,
             @RequestPart(value = "image", required = false) MultipartFile profileImage) {
 
-        Optional.ofNullable(profileImage)
-                .ifPresent(this::validateImage);
+        Optional.ofNullable(profileImage).ifPresent(this::validateImage);
 
-        return ResponseEntity.ok(userService.updateProfile(
-                user.getUserId(), profileDTO, profileImage));
+        return ResponseEntity.ok(userService.updateProfile(user.getUserId(), profileDTO, profileImage));
     }
 
     @GetMapping("/profile/image/{fileName:.+}")
     public ResponseEntity<Resource> getProfileImage(@PathVariable String fileName) {
         Resource resource = fileStorageService.loadFileAsResource(fileName);
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG)
-                .body(resource);
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(resource);
     }
 
     private void validateImage(MultipartFile file) {
@@ -70,10 +61,14 @@ public class UserController {
             throw new IllegalArgumentException("File size cannot exceed 5MB");
         }
 
-        if (!Optional.ofNullable(file.getContentType())
-                .filter(type -> type.startsWith("image/"))
-                .isPresent()) {
+        if (!Optional.ofNullable(file.getContentType()).filter(type -> type.startsWith("image/")).isPresent()) {
             throw new IllegalArgumentException("Only image files are allowed");
         }
     }
+
+    @GetMapping("/{username}")
+    public ResponseEntity<UserDTO> getUserByUsername(@PathVariable String username) {
+        return ResponseEntity.ok(userService.getByUsername(username));
+    }
+
 }
