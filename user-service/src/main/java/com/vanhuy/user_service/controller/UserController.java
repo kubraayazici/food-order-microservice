@@ -20,6 +20,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
     private final UserService userService;
     private final FileStorageService fileStorageService;
@@ -27,12 +28,6 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<ProfileResponse> getProfile(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userService.getProfile(user.getUserId()));
-    }
-
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable Integer userId) {
-        userService.deleteUserById(userId);
-        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/profile")
@@ -46,6 +41,14 @@ public class UserController {
         return ResponseEntity.ok(userService.updateProfile(user.getUserId(), profileDTO, profileImage));
     }
 
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable Integer userId) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
     @GetMapping("/profile/image/{fileName:.+}")
     public ResponseEntity<Resource> getProfileImage(@PathVariable String fileName) {
         Resource resource = fileStorageService.loadFileAsResource(fileName);
@@ -55,10 +58,6 @@ public class UserController {
     private void validateImage(MultipartFile file) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Please select a file to upload");
-        }
-
-        if (file.getSize() > 5 * 1024 * 1024) {
-            throw new IllegalArgumentException("File size cannot exceed 5MB");
         }
 
         if (!Optional.ofNullable(file.getContentType()).filter(type -> type.startsWith("image/")).isPresent()) {

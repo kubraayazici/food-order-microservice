@@ -11,8 +11,8 @@ import { UserDTO } from '../dto/auth/UserDTO';
   providedIn: 'root'
 })
 export class AuthService {
-  private authUrl = environment.baseUrl + '/auth';
-  // private authUrl = 'http://localhost:8081/api/v1/auth';
+  // private authUrl = environment.baseUrl + '/auth';
+  private authUrl = 'http://localhost:8081/api/v1/auth';
   private tokenKey = 'auth_token';
   private jwtHelper = new JwtHelperService();
 

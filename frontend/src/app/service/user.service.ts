@@ -1,14 +1,18 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/enviroment';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
 import { UserDTO } from '../dto/auth/UserDTO';
+import { ProfileResponse } from '../dto/user/ProfileResponse';
+import { ProfileUpdateDTO } from '../dto/user/ProfileUpdateDTO';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private userUrl = environment.baseUrl + '/users';
+ 
+  // private userUrl = environment.baseUrl + '/users';
+  private userUrl = "http://localhost:8081/api/v1/users";
 
   private userSubject  = new BehaviorSubject<UserDTO | null>(null);
   user$ = this.userSubject.asObservable();
@@ -23,7 +27,60 @@ export class UserService {
       catchError(this.handleError)
     );
   }
+
+  updateProfile(profile: ProfileUpdateDTO, image?: File): Observable<ProfileResponse> {
+    const formData = new FormData();
+  
+    // Append the profile data as JSON
+    formData.append('profile', new Blob([JSON.stringify(profile)], { type: 'application/json' }));
+  
+    // If an image is provided, append it
+    if (image) {
+      formData.append('image', image);
+    }
+  
+    return this.http.put<ProfileResponse>(`${this.userUrl}/profile`, formData, {
+      headers: new HttpHeaders({
+        'Accept': 'application/json',
+      }),
+    }).pipe(
+      tap((profileResponse: ProfileResponse) => {
+        const currentUser = this.userSubject.getValue(); // Get the current user info
+  
+        if (currentUser) {
+          // Update the userSubject with new profile details
+          const updatedUser: UserDTO = {
+            ...currentUser,
+            username: profileResponse.username,
+            email: profileResponse.email,
+            address: profileResponse.address,
+            profileImageUrl: profileResponse.profileImageUrl, // Add the profile image URL
+          };
+          this.setUserInfo(updatedUser); // Update BehaviorSubject with new user info
+        }
+      }),
+      catchError(this.handleError)
+    );
+  }
+  
+  getProfile(): Observable<ProfileResponse> {
+    return this.http.get<ProfileResponse>(`${this.userUrl}/profile`).pipe(
+      tap((profileResponse : ProfileResponse) => {
+        const currentUser = this.userSubject.getValue();
+        if(currentUser) {
+          const updatedUser: UserDTO = {
+            ...currentUser,
+            username: profileResponse.username,
+            email: profileResponse.email,
+            address: profileResponse.address,
+            profileImageUrl: profileResponse.profileImageUrl, // Include profile image URL
+          };
+          this.setUserInfo(updatedUser);
+      }})
+    );
+  }
   setUserInfo(user: UserDTO ) {
+
     this.userSubject.next(user);
   }
 
