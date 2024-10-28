@@ -6,13 +6,14 @@ import { environment } from '../../environments/enviroment';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { UserService } from './user.service';
 import { UserDTO } from '../dto/auth/UserDTO';
+import { AuthEventService } from './auth-event.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // private authUrl = environment.baseUrl + '/auth';
-  private authUrl = 'http://localhost:8081/api/v1/auth';
+  private authUrl = environment.baseUrl + '/auth';
+  // private authUrl = 'http://localhost:8081/api/v1/auth';
   private tokenKey = 'auth_token';
   private jwtHelper = new JwtHelperService();
 
@@ -23,9 +24,16 @@ export class AuthService {
   private currentUser = new BehaviorSubject<string | null>(this.getUsernameFromToken());
   currentUser$ = this.currentUser.asObservable();
 
+  private role = new BehaviorSubject<string | null>(this.getRoleFromToken());
+  role$ = this.role.asObservable();
+
   constructor(private http: HttpClient
-    ,private userService: UserService,
-  ) { 
+    , private authEventService: AuthEventService,
+  ) {
+    // Subscribe to token updates
+    this.authEventService.tokenUpdate$.subscribe(token => {
+      this.setToken(token);
+    });
   }
 
   login(username: string, password: string): Observable<AuthResponse> {
@@ -33,22 +41,12 @@ export class AuthService {
       .pipe(
         tap(response => {
           this.setToken(response.token);
-          const decodedUsername = this.getUsernameFromToken();
-          
-          this.currentUser.next(decodedUsername);
-          this.loggedIn.next(true);
-          
-          if (decodedUsername) {
-            this.userService.getUserByUsername(decodedUsername).subscribe(user => {
-              this.userService.setUserInfo(user);  // Store user information in the UserService
-            });
-          }
         }),
         catchError(this.handleError)
       );
   }
 
-  register(username : string , email :string, password : string) : Observable<any> {
+  register(username: string, email: string, password: string): Observable<any> {
     return this.http.post(`${this.authUrl}/register`, {
       username,
       email,
@@ -57,9 +55,14 @@ export class AuthService {
       catchError(this.handleError)
     );
   }
-  
+
   private setToken(token: string) {
     localStorage.setItem(this.tokenKey, token);
+    const decodedUsername = this.getUsernameFromToken();
+    this.currentUser.next(decodedUsername);
+    const decodedRole = this.getRoleFromToken();
+    this.role.next(decodedRole);
+    this.loggedIn.next(true);
   }
 
   getToken(): string | null {
@@ -70,7 +73,7 @@ export class AuthService {
     const token = this.getToken();
     return token ? !this.jwtHelper.isTokenExpired(token) : false;
   }
-  
+
   // Error handler
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = '';
@@ -94,16 +97,32 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     this.loggedIn.next(false);
     this.currentUser.next(null);
-    this.userService.clearUserInfo();
+    this.role.next(null);
   }
 
   getUsernameFromToken(): string | null {
     const token = this.getToken();
-    if(token && !this.jwtHelper.isTokenExpired(token)) {
+    if (token && !this.jwtHelper.isTokenExpired(token)) {
       return this.jwtHelper.decodeToken(token).sub;
-    }else{
+    } else {
       return null;
     }
   }
+
+  getRoleFromToken(): string | null {
+    const token = this.getToken();
+    if (token) {
+      try {
+        const decodedToken = this.jwtHelper.decodeToken(token);
+        if (decodedToken.roles && decodedToken.roles.length > 0) {
+          return decodedToken.roles[0].authority;
+        }
+      } catch (error) {
+        return null;
+      }
+    }
+    return null;
+  }
+
 
 }

@@ -1,5 +1,6 @@
 package com.vanhuy.notification_service.service;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +9,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.exceptions.TemplateInputException;
 
 import java.util.Map;
 
@@ -65,7 +67,8 @@ public class EmailService {
             helper.setText(html, true);
 
             javaMailSender.send(msg);
-        } catch (Exception e) {
+        } catch (TemplateInputException | MessagingException e) {
+            System.err.println("Error while parsing template for forgot password email: " + e.getMessage());
             e.printStackTrace();
         }
     }

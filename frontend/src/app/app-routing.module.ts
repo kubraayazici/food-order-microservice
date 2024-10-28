@@ -11,6 +11,8 @@ import { AuthGuard } from './guard/auth.guard';
 import { RegisterComponent } from './component/register/register.component';
 import { ForgotPasswordComponent } from './component/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './component/reset-password/reset-password.component';
+import { UnauthorizedComponent } from './component/unauthorized/unauthorized.component';
+import { DashboardComponent } from './component/admin/dashboard/dashboard.component';
 
 const routes: Routes = [
   { path: '', component: ListRestaurantComponent },
@@ -22,7 +24,9 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'profile', component: ProfileComponent  ,canActivate: [AuthGuard]},
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'reset-password', component: ResetPasswordComponent }
+  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], data: { roles: ['ROLE_ADMIN'] } },
+  { path: 'unauthorized', component:  UnauthorizedComponent},
 ];
 
 @NgModule({

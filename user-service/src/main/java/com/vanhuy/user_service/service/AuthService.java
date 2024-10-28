@@ -5,6 +5,7 @@ import com.vanhuy.user_service.component.JwtUtil;
 import com.vanhuy.user_service.dto.*;
 import com.vanhuy.user_service.exception.AuthException;
 import com.vanhuy.user_service.exception.UserNotFoundException;
+import com.vanhuy.user_service.model.Role;
 import com.vanhuy.user_service.model.User;
 import com.vanhuy.user_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,32 +54,53 @@ public class AuthService {
     }
 
     @Transactional
-    public RegisterResponse register (RegisterRequest registerRequest) {
+    public RegisterResponse register(RegisterRequest registerRequest) {
+        // Validate username and email uniqueness
+        validateNewUserCredentials(registerRequest);
+
+        // Create and save new user
+        User newUser = createNewUser(registerRequest);
+        userRepository.save(newUser);
+
+        // Send welcome email asynchronously
+        sendWelcomeEmailAsync(registerRequest);
+
+        log.info("User {} registered successfully", registerRequest.getUsername());
+        return new RegisterResponse("User registered successfully");
+    }
+
+    private void validateNewUserCredentials(RegisterRequest registerRequest) {
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
             throw new UserNotFoundException("Username is already taken");
         }
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new UserNotFoundException("Email is already in use");
         }
+    }
 
+    private User createNewUser(RegisterRequest registerRequest) {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRoles(Collections.singleton("ROLE_USER"));
+        user.getRoles().add(Role.ROLE_USER.name());
+        return user;
+    }
 
-        log.info("User {} registered successfully", registerRequest.getUsername());
-        userRepository.save(user);
-
-        // tach biệt việc gửi email với việc trả về response
-        CompletableFuture.runAsync(() -> notificationClient.sendWelcomeEmail(new EmailRequest(registerRequest.getEmail(), registerRequest.getUsername())))
-                .exceptionally(ex -> {
-                    log.error("Failed to send welcome email to {}", registerRequest.getEmail(), ex);
-                    return null;
-                });
-
-        return new RegisterResponse("User registered successfully");
-        
+    /**
+     * Sends welcome email asynchronously to avoid blocking the registration process.
+     */
+    private void sendWelcomeEmailAsync(RegisterRequest registerRequest) {
+        CompletableFuture.runAsync(() -> {
+            EmailRequest emailRequest = new EmailRequest(
+                    registerRequest.getEmail(),
+                    registerRequest.getUsername()
+            );
+            notificationClient.sendWelcomeEmail(emailRequest);
+        }).exceptionally(ex -> {
+            log.error("Failed to send welcome email to {}", registerRequest.getEmail(), ex);
+            return null;
+        });
     }
 
 }

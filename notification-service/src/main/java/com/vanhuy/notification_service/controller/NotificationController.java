@@ -3,14 +3,12 @@ package com.vanhuy.notification_service.controller;
 import com.vanhuy.notification_service.dto.ApiResponse;
 import com.vanhuy.notification_service.dto.EmailRequest;
 import com.vanhuy.notification_service.dto.EmailResetRequest;
-import com.vanhuy.notification_service.service.EmailProducerService;
+import com.vanhuy.notification_service.kafka.EmailProducerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
 
 @RestController
 @RequiredArgsConstructor

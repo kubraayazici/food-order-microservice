@@ -14,4 +14,5 @@ public class ProfileResponse {
     private String email;
     private String address;
     private String profileImageUrl;
+    private String newJwtToken;
 }

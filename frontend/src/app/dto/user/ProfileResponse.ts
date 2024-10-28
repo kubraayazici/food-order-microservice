@@ -3,4 +3,5 @@ export interface ProfileResponse {
     email: string;
     address: string;
     profileImageUrl: string;
+    newJwtToken?: string;
   }

@@ -19,6 +19,7 @@ export class ForgotPasswordComponent {
     private formBuilder: FormBuilder,
     private passwordResetService: PasswordResetService,
   ){
+    
     this.initForm();
   }
   private initForm(): void {

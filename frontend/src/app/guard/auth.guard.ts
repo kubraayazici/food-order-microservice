@@ -6,10 +6,19 @@ export const AuthGuard: CanActivateFn = (route, state): boolean | UrlTree=> {
   const router = inject(Router);
   const authService = inject(AuthService);
 
-  if(authService.isLoggedIn()) {
-    return true;
+  const roles = route.data['roles'] as Array<string>;
+  if(!authService.isLoggedIn()) {
+    // Store the attempted URL for redirecting
+  return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
 
-  // Store the attempted URL for redirecting
-  return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  if(roles) {
+    const userRole = authService.getRoleFromToken();
+    if(!userRole || !roles.includes(userRole)) {
+      return router.createUrlTree(['/unauthorized']);
+    }
+  }
+
+  return true;
+  
 };

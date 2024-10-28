@@ -26,8 +26,9 @@ public class ConfigGlobalFilter implements GlobalFilter, Ordered {
             "/api/v1/auth/forgot",
             "/api/v1/auth/reset",
             "/aggregate/",
-            "/swagger-ui/",
-            "/api-docs/",
+            "/swagger-ui/index.html",
+            "/swagger-ui/**",
+            "/api-docs/**",
             "/api/v1/restaurants",
             "/api/v1/menu-items"
     );

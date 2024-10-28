@@ -11,13 +11,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
@@ -53,6 +53,13 @@ public class AuthController {
     public ResponseEntity<PasswordResetResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         PasswordResetResponse response=  passwordResetService.resetPassword(request);
         return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/test")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Test successful");
     }
 
 }

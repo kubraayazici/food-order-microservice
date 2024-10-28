@@ -10,8 +10,8 @@ import { ResetPasswordRequest } from '../dto/password-reset/ResetPasswordRequest
   providedIn: 'root'
 })
 export class PasswordResetService {
-  private resetPasswordUrl = environment.baseUrl + '/auth';
-  // private resetPasswordUrl = "http://localhost:8081/api/v1/auth";
+  // private resetPasswordUrl = environment.baseUrl + '/auth';
+  private resetPasswordUrl = "http://localhost:8081/api/v1/auth";
   constructor(
     private http: HttpClient
   ) { }

@@ -4,6 +4,7 @@ import { CartService } from './service/cart.service';
 import { AuthService } from './service/auth.service';
 import { UserDTO } from './dto/auth/UserDTO';
 import { UserService } from './service/user.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +24,8 @@ export class AppComponent implements OnInit {
   constructor(
     private cartService: CartService,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private router : Router
   ) {
     
   }
@@ -60,6 +62,8 @@ export class AppComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.isDropdownOpen = false;
+    // redirect to home page
+    this.router.navigate(['/']);
   }
   
 }
