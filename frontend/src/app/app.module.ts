@@ -18,6 +18,9 @@ import { ForgotPasswordComponent } from './component/forgot-password/forgot-pass
 import { ResetPasswordComponent } from './component/reset-password/reset-password.component';
 import { UnauthorizedComponent } from './component/unauthorized/unauthorized.component';
 import { DashboardComponent } from './component/admin/dashboard/dashboard.component';
+import { UserManagementComponent } from './component/admin/user-management/user-management.component';
+import { RestaurantManagementComponent } from './component/admin/restaurant-management/restaurant-management.component';
+import { OrderManagementComponent } from './component/admin/order-management/order-management.component';
 
 
 @NgModule({
@@ -34,7 +37,10 @@ import { DashboardComponent } from './component/admin/dashboard/dashboard.compon
     ForgotPasswordComponent,
     ResetPasswordComponent,
     UnauthorizedComponent,
-    DashboardComponent
+    DashboardComponent,
+    UserManagementComponent,
+    RestaurantManagementComponent,
+    OrderManagementComponent
   ],
   imports: [
     BrowserModule,

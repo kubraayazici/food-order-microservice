@@ -5,7 +5,7 @@ spring:
     gateway:
       routes:
         - id: restaurant-service
-          uri: lb://RESTAURANT-SERVICE
+          uri: http://localhost:8082
           predicates:
             - Path=/api/v1/restaurants/**, /api/v1/menu-items/**
           filters:
@@ -14,7 +14,7 @@ spring:
                 name: restaurantCircuitBreaker
                 fallbackUri: forward:/fallback/restaurant
         - id: order-service
-          uri: lb://ORDER-SERVICE
+          uri: http://localhost:8083
           predicates:
             - Path=/api/v1/orders/**
           filters:
@@ -23,7 +23,7 @@ spring:
                 name: orderCircuitBreaker
                 fallbackUri: forward:/fallback/order
         - id: user-service
-          uri: lb://USER-SERVICE
+          uri: http://localhost:8081
           predicates:
             - Path=/api/v1/users/**, /api/v1/auth/**
           filters:

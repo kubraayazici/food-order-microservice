@@ -11,6 +11,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,6 +56,8 @@ public class UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .address(user.getAddress())
+                .profileImageName(user.getProfileImageName())
+                .roles(user.getRoles())
                 .build();
     }
 
@@ -138,5 +143,8 @@ public class UserService {
         }
     }
 
-
+    public Page<UserDTO> getUsersByPage(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(this::toUserDTO);
+    }
 }

@@ -25,8 +25,13 @@ const routes: Routes = [
   { path: 'profile', component: ProfileComponent  ,canActivate: [AuthGuard]},
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], data: { roles: ['ROLE_ADMIN'] } },
   { path: 'unauthorized', component:  UnauthorizedComponent},
+  { path: 'dashboard', 
+    component: DashboardComponent, 
+    canActivate: [AuthGuard], 
+    data: { roles: ['ROLE_ADMIN'] },
+    loadChildren: () => import('./component/admin/dashboard-routing/dashboard-routing-routing.module').then(m => m.DashboardRoutingRoutingModule)},
+
 ];
 
 @NgModule({

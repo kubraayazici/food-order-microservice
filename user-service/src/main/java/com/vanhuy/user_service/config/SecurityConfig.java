@@ -30,7 +30,7 @@ public class SecurityConfig {
                         req -> req.requestMatchers(
                                 "/api/v1/auth/**" , "/api/v1/users/**" ,"/swagger-ui/**" , "/api-docs/**"
                                 ).permitAll()
-//                                .requestMatchers("/api/v1/auth/test").hasAuthority("ROLE_ADMIN")
+//                                .requestMatchers("/api/v1/user").hasAuthority("ROLE_ADMIN")
                                 .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider)

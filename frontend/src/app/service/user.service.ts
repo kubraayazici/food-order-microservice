@@ -6,6 +6,7 @@ import { ProfileResponse } from '../dto/user/ProfileResponse';
 import { ProfileUpdateDTO } from '../dto/user/ProfileUpdateDTO';
 import { AuthEventService } from './auth-event.service';
 import { environment } from '../../environments/enviroment';
+import { Page } from '../dto/Page';
 
 @Injectable({
   providedIn: 'root'
@@ -113,5 +114,9 @@ export class UserService {
     }
     console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
+  }
+
+  getAllUsers(page: number, size: number): Observable<Page<UserDTO>> {
+    return this.http.get<Page<UserDTO>>(`${this.userUrl}?page=${page}&size=${size}`);
   }
 }
