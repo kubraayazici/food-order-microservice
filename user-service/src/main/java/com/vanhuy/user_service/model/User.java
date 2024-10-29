@@ -55,6 +55,9 @@ public class User implements UserDetails {
                 .collect(Collectors.toList());
     }
 
+    @Column(name = "is_active" , nullable = false)
+    private boolean isActive = true;
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -72,6 +75,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isActive;
     }
 }

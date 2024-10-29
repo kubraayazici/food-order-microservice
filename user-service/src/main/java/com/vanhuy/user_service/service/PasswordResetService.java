@@ -33,7 +33,7 @@ public class PasswordResetService {
     // initiate password reset
     public PasswordResetResponse initiatePasswordReset(ForgotPasswordRequest request) {
         try{
-            User user = userRepository.findByEmail(request.getEmail())
+            User user = userRepository.findByEmailAndIsActiveTrue(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             String token = UUID.randomUUID().toString();

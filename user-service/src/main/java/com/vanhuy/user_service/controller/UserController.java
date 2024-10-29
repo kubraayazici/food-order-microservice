@@ -19,6 +19,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -71,10 +73,56 @@ public class UserController {
         return ResponseEntity.ok(userService.getByUsername(username));
     }
 
-    @GetMapping()
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Page<UserDTO>> getUserByPage(@RequestParam int page, @RequestParam int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(userService.getUsersByPage(pageable));
+//    @GetMapping()
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    public ResponseEntity<Page<UserDTO>> getUserByPage(@RequestParam int page, @RequestParam int size) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        return ResponseEntity.ok(userService.getUsersByPage(pageable));
+//    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserDTO>> getAllUsers(
+            @RequestParam(defaultValue = "false") boolean includeInactive) {
+        List<UserDTO> users = includeInactive ?
+                userService.getAllUsers() :
+                userService.getAllActiveUsers();
+        return ResponseEntity.ok(users);
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
+        UserDTO createdUser = userService.create(userDTO);
+        return ResponseEntity
+                .created(URI.create("/api/users/" + createdUser.getUserId()))
+                .body(createdUser);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<UserDTO> updateUser(
+            @PathVariable Integer id,
+            @Valid @RequestBody UserDTO userDTO) {
+        return ResponseEntity.ok(userService.updateUser(id, userDTO));
+    }
+
+    @PostMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Void> deactivateUser(@PathVariable Integer id) {
+        userService.deactivateUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/reactivate")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<UserDTO> reactivateUser(@PathVariable Integer id) {
+        return ResponseEntity.ok(userService.reactivateUser(id));
+    }
+
 }

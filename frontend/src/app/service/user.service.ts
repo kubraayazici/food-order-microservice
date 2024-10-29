@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
-import { UserDTO } from '../dto/auth/UserDTO';
+import { UserCreateDTO, UserDTO, UserUpdateDTO } from '../dto/auth/UserDTO';
 import { ProfileResponse } from '../dto/user/ProfileResponse';
 import { ProfileUpdateDTO } from '../dto/user/ProfileUpdateDTO';
 import { AuthEventService } from './auth-event.service';
@@ -118,5 +118,30 @@ export class UserService {
 
   getAllUsers(page: number, size: number): Observable<Page<UserDTO>> {
     return this.http.get<Page<UserDTO>>(`${this.userUrl}?page=${page}&size=${size}`);
+  }
+
+  getUserById(userId: number): Observable<UserDTO> {
+    return this.http.get<UserDTO>(`${this.userUrl}/${userId}`);
+  }
+
+  createUser(user: UserCreateDTO): Observable<UserDTO> {
+    return this.http.post<UserDTO>(`${this.userUrl}`, user);
+  }
+
+  updateUser(id: number, user: UserUpdateDTO): Observable<UserDTO> {
+    return this.http.put<UserDTO>(`${this.userUrl}/${id}`, user);
+  }
+
+  deactivateUser(id: number): Observable<void> {
+    return this.http.post<void>(`${this.userUrl}/${id}/deactivate`, {});
+  }
+
+  reactivateUser(id: number): Observable<UserDTO> {
+    return this.http.post<UserDTO>(`${this.userUrl}/${id}/reactivate`, {});
+  }
+
+  getUsers(includeInactive: boolean = false): Observable<UserDTO[]> {
+    const params = new HttpParams().set('includeInactive', includeInactive.toString());
+    return this.http.get<UserDTO[]>(this.userUrl, { params });
   }
 }
