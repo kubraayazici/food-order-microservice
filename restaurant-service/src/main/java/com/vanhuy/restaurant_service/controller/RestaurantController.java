@@ -3,7 +3,7 @@ package com.vanhuy.restaurant_service.controller;
 
 import com.vanhuy.restaurant_service.dto.RestaurantDTO;
 import com.vanhuy.restaurant_service.exception.RestaurantNotFoundException;
-import com.vanhuy.restaurant_service.service.ImageService;
+import com.vanhuy.restaurant_service.service.FileStorageService;
 import com.vanhuy.restaurant_service.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -22,10 +22,11 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/v1/restaurants")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
-    private final ImageService imageService;
+    private final FileStorageService imageService;
 
     @PostMapping
     public ResponseEntity<RestaurantDTO> createRestaurant(@RequestBody RestaurantDTO restaurantDTO) {
@@ -56,14 +57,11 @@ public class RestaurantController {
 
     @GetMapping("/images/{filename:.+}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
-        try {
-            Resource resource = imageService.getImage(filename);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                    .body(resource);
-        } catch (IOException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Resource resource = imageService.getImage(filename);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "max-age=31536000") // Cache for 1 year
+                .body(resource);
     }
 }

@@ -3,7 +3,7 @@ package com.vanhuy.restaurant_service.controller;
 import com.vanhuy.restaurant_service.dto.MenuItemDTO;
 import com.vanhuy.restaurant_service.exception.ResourceNotFoundException;
 import com.vanhuy.restaurant_service.model.Restaurant;
-import com.vanhuy.restaurant_service.service.ImageService;
+import com.vanhuy.restaurant_service.service.FileStorageService;
 import com.vanhuy.restaurant_service.service.MenuItemService;
 import com.vanhuy.restaurant_service.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +21,11 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/menu-items")
+@CrossOrigin(origins = "*")
 public class MenuItemController {
     private final MenuItemService menuItemService;
     private final RestaurantService restaurantService;
-    private final ImageService imageService;
+    private final FileStorageService imageService;
 
     @PostMapping("/{restaurantId}")
     public ResponseEntity<MenuItemDTO> createMenuItem(@PathVariable Integer restaurantId, @RequestBody MenuItemDTO menuItemDTO) {
@@ -58,15 +59,12 @@ public class MenuItemController {
 
     @GetMapping("/images/{filename:.+}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
-        try {
-            Resource resource = imageService.getImage(filename);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                    .body(resource);
-        } catch (IOException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Resource resource = imageService.getImage(filename);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "max-age=31536000") // Cache for 1 year
+                .body(resource);
     }
 
     // get price by menu item id

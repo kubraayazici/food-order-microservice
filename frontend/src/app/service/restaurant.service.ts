@@ -13,6 +13,9 @@ export class RestaurantService {
   private restaurantUrl = `${environment.baseUrl}/restaurants`;
   private menuUrl = `${environment.baseUrl}/menu-items`;
 
+  // private restaurantUrl = 'http://localhost:8082/api/v1/restaurants';
+  // private menuUrl = 'http://localhost:8082/api/v1/menu-items';
+
   constructor(private http: HttpClient) { }
 
   getAllRestaurants(page: number, size: number): Observable<Page<Restaurant>> {
