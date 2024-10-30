@@ -80,12 +80,13 @@ This project implements a microservices-based architecture using Spring Boot and
 - Maven
 - Kafka
 
-## 🚀 Getting Started
+## 🚀 Installation
 
-1. **Services**
+1. **Clone the repository:**
+```bash
+https://github.com/Vanhuyne/food-order-microservice.gitspringboot-3-micro-service-demo.git
 ```
-bash
-1. Eureka Server
-cd eureka-service
-mvn spring-boot:run
-```
+2. **Navigate to the project directory:**
+3. **Build and package each component with Maven**
+
+
