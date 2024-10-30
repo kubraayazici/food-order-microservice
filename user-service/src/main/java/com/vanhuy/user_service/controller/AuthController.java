@@ -11,12 +11,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+//@CrossOrigin(origins = "http://localhost:4200")
 @Slf4j
 public class AuthController {
     private final AuthService authService;
@@ -55,11 +55,5 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-
-    @GetMapping("/test")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Test successful");
-    }
 
 }

@@ -1,6 +1,7 @@
 package com.vanhuy.user_service.service;
 
 import com.vanhuy.user_service.component.JwtUtil;
+import com.vanhuy.user_service.component.UserMapper;
 import com.vanhuy.user_service.dto.ProfileResponse;
 import com.vanhuy.user_service.dto.ProfileUpdateDTO;
 import com.vanhuy.user_service.dto.UserDTO;
@@ -12,16 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +29,7 @@ public class UserService {
     private final FileStorageService fileStorageService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -38,17 +37,17 @@ public class UserService {
     public UserDTO getByUsername(String username) {
         User user = userRepository.findByUsernameAndIsActiveTrue(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        return toUserDTO(user);
+        return userMapper.toUserDTO(user);
     }
-    public List<UserDTO> getAllActiveUsers() {
-        return userRepository.findByIsActiveTrue().stream()
-                .map(this::toUserDTO)
-                .collect(Collectors.toList());
+    public Page<UserDTO> getAllActiveUsers(Pageable pageable) {
+        return userRepository.findByIsActiveTrue(pageable)
+                .map(userMapper::toUserDTO);
+
     }
-    public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::toUserDTO)
-                .collect(Collectors.toList());
+    public Page<UserDTO> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toUserDTO);
+
     }
 
     @Transactional
@@ -65,17 +64,7 @@ public class UserService {
         }
     }
 
-    private UserDTO toUserDTO(User user) {
-        return UserDTO.builder()
-                .userId(user.getUserId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .address(user.getAddress())
-                .profileImageName(user.getProfileImageName())
-                .roles(user.getRoles())
-                .isActive(user.isActive())
-                .build();
-    }
+
 
     public ProfileResponse getProfile(Integer userId) {
         return userRepository.findById(userId)
@@ -159,37 +148,25 @@ public class UserService {
         }
     }
 
-    // get all page of users
-    public Page<UserDTO> getUsersByPage(Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(this::toUserDTO);
-    }
-
-    // get all active users
-//    public Page<UserDTO> getAllActiveUsers(Pageable pageable) {
-//        return userRepository.findByIsActiveTrue(pageable)
-//                .map(this::toUserDTO);
-//    }
-
     // get user by id
     public UserDTO getUserById(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        return toUserDTO(user);
+        return userMapper.toUserDTO(user);
     }
 
     // new user
     public UserDTO create(UserDTO userDTO) {
         validateNewUser(userDTO);
 
-        User user = toEntity(userDTO);
+        User user = userMapper.toEntity(userDTO);
         user.setActive(true);
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             user.setRoles(Set.of("ROLE_USER"));
         }
 
         User savedUser = userRepository.save(user);
-        return toUserDTO(savedUser);
+        return userMapper.toUserDTO(savedUser);
     }
 
     public UserDTO updateUser(Integer id, UserDTO userDTO) {
@@ -204,43 +181,7 @@ public class UserService {
         updateEntity(existingUser, userDTO);
 
         User updatedUser = userRepository.save(existingUser);
-        return toUserDTO(updatedUser);
-    }
-
-    private void validateNewUser(UserDTO userDTO) {
-        if (userRepository.findByUsernameAndIsActiveTrue(userDTO.getUsername()).isPresent()) {
-            throw new UserNotFoundException("Username is already taken");
-        }
-        if (userRepository.findByUsernameAndIsActiveTrue(userDTO.getEmail()).isPresent()) {
-            throw new UserNotFoundException("Email is already in use");
-        }
-    }
-
-    private void validateUpdateUser(UserDTO userDTO, User existingUser) {
-        if (!existingUser.getUsername().equals(userDTO.getUsername()) &&
-                userRepository.existsByUsernameAndIsActiveTrue(userDTO.getUsername())) {
-            throw new UserNotFoundException("Username already exists");
-        }
-        if (!existingUser.getEmail().equals(userDTO.getEmail()) &&
-                userRepository.existsByEmailAndIsActiveTrue(userDTO.getEmail())) {
-            throw new UserNotFoundException("Email already exists");
-        }
-    }
-
-    // to entity
-    private User toEntity(UserDTO userDTO) {
-        User user = new User();
-        user.setUserId(userDTO.getUserId());
-        user.setUsername(userDTO.getUsername());
-        user.setEmail(userDTO.getEmail());
-        user.setAddress(userDTO.getAddress());
-        user.setProfileImageName(userDTO.getProfileImageName());
-        user.setRoles(userDTO.getRoles());
-        user.setActive(userDTO.isActive());
-        if (userDTO.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        }
-        return user;
+        return userMapper.toUserDTO(updatedUser);
     }
 
     // update entity
@@ -272,7 +213,27 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
         user.setActive(true);
         User reactivatedUser = userRepository.save(user);
-        return toUserDTO(reactivatedUser);
+        return userMapper.toUserDTO(reactivatedUser);
+    }
+
+    private void validateNewUser(UserDTO userDTO) {
+        if (userRepository.findByUsernameAndIsActiveTrue(userDTO.getUsername()).isPresent()) {
+            throw new UserNotFoundException("Username is already taken");
+        }
+        if (userRepository.findByUsernameAndIsActiveTrue(userDTO.getEmail()).isPresent()) {
+            throw new UserNotFoundException("Email is already in use");
+        }
+    }
+
+    private void validateUpdateUser(UserDTO userDTO, User existingUser) {
+        if (!existingUser.getUsername().equals(userDTO.getUsername()) &&
+                userRepository.existsByUsernameAndIsActiveTrue(userDTO.getUsername())) {
+            throw new UserNotFoundException("Username already exists");
+        }
+        if (!existingUser.getEmail().equals(userDTO.getEmail()) &&
+                userRepository.existsByEmailAndIsActiveTrue(userDTO.getEmail())) {
+            throw new UserNotFoundException("Email already exists");
+        }
     }
 
 }

@@ -1,36 +1,91 @@
 # Spring Boot Microservices Project
 
-## Architecture Overview
+A modern, scalable food delivery system built with Spring Boot microservices architecture.
 
-This project demonstrates a microservices architecture using Spring Boot and Spring Cloud. The system is composed of several interconnected services that work together to provide a scalable and maintainable application.
+## 🏗️ Architecture Overview
+
+This project implements a microservices-based architecture using Spring Boot and Spring Cloud, designed for scalability and maintainability.
 
 ![Architecture Diagram](./screenshot/architecture.png)
 
-## Key Components
+## 🚀 Key Components
 
-1. API Gateway
-2. Eureka Service Discovery
-3. User Service
-4. Restaurant Service
-5. Order Service
-6. Notification Service
-7. Frontend (Angular)
+### Backend Services
 
-- **API Gateway**: Acts as a single entry point for all client requests, routing them to appropriate services.
-- **Eureka Service Discovery**: Allows services to find and communicate with each other without hard-coding hostname and port.
-- **User Service**: Manages user accounts and authentication.
-- **Restaurant Service**: Handles restaurant information and menus.
-- **Order Service**: Processes and manages customer orders.
-- **Notification Service**: Sends notifications to users about their orders.
-- **Frontend**: Angular-based user interface for customers to interact with the system.
+- **API Gateway** (Port: 8080)
+  - Single entry point for all client requests
+  - Request routing and load balancing
+  - Built with Spring Cloud Gateway
 
-[Include instructions on how to set up and run the project]
+- **Eureka Service Discovery** (Port: 8761)
+  - Service registration and discovery
+  - Load balancing support
+  - Health monitoring
 
-## Technologies Used
+- **User Service** (Port: 8081)
+  - User management and authentication
+  - Profile management
+  - JWT-based security
 
-- Spring Boot
-- Spring Cloud (Eureka,Feign)
-- Angular (Frontend)
-- MySQL (Database)
-- Docker (Containerization)
+- **Restaurant Service** (Port: 8082)
+  - Restaurant information management
+  - Menu management
+  - Image handling for restaurants and menu items
 
+- **Order Service** (Port: 8083)
+  - Order processing and management
+  - Integration with restaurant and user services
+  - Order status tracking
+
+- **Notification Service** (Port: 8084)
+  - Email notifications
+  - Kafka-based event processing
+  - Template-based email generation
+
+### Frontend
+
+- **Angular Application** (Port: 4200)
+  - Modern UI built with Angular 17
+  - Responsive design
+  - JWT authentication integration
+
+## 🛠️ Technologies Used
+
+- **Backend**
+  - Java 21
+  - Spring Boot 3.3.4
+  - Spring Cloud 2023.0.3
+  - Spring Security + JWT
+  - MySQL
+  - Apache Kafka
+  - OpenAPI (Swagger)
+
+- **Frontend**
+  - Angular 17
+  - TypeScript
+  - RxJS
+  - TailwindCSS
+
+- **DevOps & Tools**
+  - Docker
+  - Maven
+  - Git
+
+## 📋 Prerequisites
+
+- Java 21
+- Node.js 18+
+- MySQL 8+
+- Docker
+- Maven
+- Kafka
+
+## 🚀 Getting Started
+
+1. **Services**
+```
+bash
+1. Eureka Server
+cd eureka-service
+mvn spring-boot:run
+```

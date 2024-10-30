@@ -26,6 +26,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
+//@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
     private final UserService userService;
     private final FileStorageService fileStorageService;
@@ -73,20 +74,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getByUsername(username));
     }
 
-//    @GetMapping()
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    public ResponseEntity<Page<UserDTO>> getUserByPage(@RequestParam int page, @RequestParam int size) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        return ResponseEntity.ok(userService.getUsersByPage(pageable));
-//    }
-
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserDTO>> getAllUsers(
-            @RequestParam(defaultValue = "false") boolean includeInactive) {
-        List<UserDTO> users = includeInactive ?
-                userService.getAllUsers() :
-                userService.getAllActiveUsers();
+    public ResponseEntity<Page<UserDTO>> getAllUsers (
+            @RequestParam(defaultValue = "false") boolean includeInactive, @RequestParam int page, @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserDTO> users = includeInactive ?
+                userService.getAllUsers(pageable) :
+                userService.getAllActiveUsers(pageable);
         return ResponseEntity.ok(users);
     }
 

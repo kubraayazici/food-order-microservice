@@ -18,9 +18,11 @@ export class UserManagementComponent {
   selectedUser?: UserDTO;
   errorMessage : string ='';
 
+  // Pagination
   currentPage = 0;
   pageSize = 4;
   totalPages = 0;
+  totalElements = 0;
 
   constructor(
     private userService: UserService,
@@ -29,16 +31,16 @@ export class UserManagementComponent {
 
   ngOnInit(): void {
     this.loadUsers();
-
   }
   
   loadUsers(): void {
     this.isLoading = true;
-    this.userService.getUsers(this.includeInactive).subscribe({
-      next: (users) => {
-        this.users = users;
+    this.userService.getUsers(this.includeInactive, this.currentPage, this.pageSize).subscribe({
+      next: (response) => {
+        this.users = response.content;
+        this.totalPages = response.totalPages;
+        this.totalElements = response.totalElements;
         this.isLoading = false;
-        console.log(users);
         
       },
       error: (error) => {
@@ -46,6 +48,17 @@ export class UserManagementComponent {
         this.isLoading = false;
       }
     });
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadUsers();
+  }
+
+  toggleInactiveUsers(): void {
+    this.includeInactive = !this.includeInactive;
+    this.currentPage = 0; // Reset to first page when toggling
+    this.loadUsers();
   }
 
   openUserForm(user?: UserDTO): void {

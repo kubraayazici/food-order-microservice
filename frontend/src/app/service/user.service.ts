@@ -140,8 +140,11 @@ export class UserService {
     return this.http.post<UserDTO>(`${this.userUrl}/${id}/reactivate`, {});
   }
 
-  getUsers(includeInactive: boolean = false): Observable<UserDTO[]> {
-    const params = new HttpParams().set('includeInactive', includeInactive.toString());
-    return this.http.get<UserDTO[]>(this.userUrl, { params });
+  getUsers(includeInactive: boolean = false, page: number , size :number): Observable<Page<UserDTO>> {
+    const params = new HttpParams()
+    .set('includeInactive', includeInactive.toString())
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<UserDTO>>(this.userUrl, { params });
   }
 }
