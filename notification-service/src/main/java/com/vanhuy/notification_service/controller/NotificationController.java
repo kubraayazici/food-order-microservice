@@ -3,6 +3,7 @@ package com.vanhuy.notification_service.controller;
 import com.vanhuy.notification_service.dto.ApiResponse;
 import com.vanhuy.notification_service.dto.EmailRequest;
 import com.vanhuy.notification_service.dto.EmailResetRequest;
+import com.vanhuy.notification_service.dto.OrderResponse;
 import com.vanhuy.notification_service.kafka.EmailProducerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,27 +25,11 @@ public class NotificationController {
         return "Email sent successfully";
     }
 
-//    @GetMapping("/forgot-password")
-//    public PasswordResetResponse sendForgotPasswordEmail(@RequestParam String email) {
-//        // generate code 6 digits
-//        String code = generateResetCode();
-//
-//        LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(15);
-//        emailProducerService.sendPasswordResetRequest(email ,code, expirationDate);
-//
-//        return new PasswordResetResponse(code, expirationDate);
-//    }
-//
-//    private String generateResetCode() {
-//        int length = 6;
-//        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-//        Random random = new Random();
-//        StringBuilder code = new StringBuilder(length);
-//        for (int i = 0; i < length; i++) {
-//            code.append(chars.charAt(random.nextInt(chars.length())));
-//        }
-//        return code.toString();
-//    }
+    @PostMapping("/order")
+    public ResponseEntity<String> sendOrderNotification(@RequestBody OrderResponse orderResponse) {
+        emailProducerService.sendOrderNotification(orderResponse);
+        return ResponseEntity.ok("Order notification sent successfully");
+    }
 
     @PostMapping("/reset-password-email")
     public ResponseEntity<ApiResponse> sendEmail(@RequestBody EmailResetRequest request) {

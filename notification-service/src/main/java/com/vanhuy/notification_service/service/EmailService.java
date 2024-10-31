@@ -1,5 +1,6 @@
 package com.vanhuy.notification_service.service;
 
+import com.vanhuy.notification_service.dto.OrderResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,36 @@ public class EmailService {
             javaMailSender.send(msg);
         } catch (TemplateInputException | MessagingException e) {
             System.err.println("Error while parsing template for forgot password email: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void sendOrderSuccessEmail(String toEmail,  OrderResponse orderResponse) {
+        try {
+            MimeMessage msg = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(msg, true);
+
+            helper.setFrom(from);
+            helper.setTo(toEmail);
+            helper.setSubject("Order confirmation");
+
+            // create context
+            Context context = new Context();
+            context.setVariable("recipientName", orderResponse.getRecipientName());
+            context.setVariable("orderId", orderResponse.getOrderId());
+            context.setVariable("orderDate", orderResponse.getOrderDate());
+            context.setVariable("totalAmount", orderResponse.getTotalAmount());
+            context.setVariable("shippingAddress", orderResponse.getShippingAddress());
+            context.setVariable("items", orderResponse.getItems());
+
+            // process template
+            String html = templateEngine.process("order-confirmation", context);
+
+            helper.setText(html, true);
+
+            javaMailSender.send(msg);
+        } catch (TemplateInputException | MessagingException e) {
+            System.err.println("Error while parsing template for order email: " + e.getMessage());
             e.printStackTrace();
         }
     }

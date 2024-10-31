@@ -1,11 +1,13 @@
 package com.vanhuy.order_service.service;
 
+import com.vanhuy.order_service.client.NotificationClient;
 import com.vanhuy.order_service.client.RestaurantClient;
 import com.vanhuy.order_service.client.UserServiceClient;
 import com.vanhuy.order_service.constant.Constants;
 import com.vanhuy.order_service.dto.OrderItemResponse;
 import com.vanhuy.order_service.dto.OrderRequest;
 import com.vanhuy.order_service.dto.OrderResponse;
+import com.vanhuy.order_service.dto.UserDTO;
 import com.vanhuy.order_service.exception.ResourceNotFoundException;
 import com.vanhuy.order_service.model.Order;
 import com.vanhuy.order_service.model.OrderItem;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +34,7 @@ public class OrderService {
     private final UserServiceClient userServiceClient;
     private final OrderRepository orderRepository;
     private final RestaurantClient restaurantClient;
+    private final NotificationClient notificationClient;
 
     // create order
     public OrderResponse createOrder(OrderRequest orderRequest) {
@@ -68,7 +72,12 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
         logger.info("Order created: " + savedOrder);
-        return orderToOrderResponse(savedOrder);
+
+        // send order notification
+        OrderResponse orderResponse = orderToOrderResponse(savedOrder);
+        sendOrderNotification(orderResponse);
+
+        return orderResponse;
     }
 
     private BigDecimal calculateSubtotal(Integer menuItemId, Integer quantity) {
@@ -88,10 +97,6 @@ public class OrderService {
         return orderToOrderResponse(order);
     }
 
-//    public String getOrderInfo(Integer userId) {
-//        UserDTO userDTO = userServiceClient.getUserById(userId);
-//        return "Order info: " + userDTO;
-//    }
 
     private OrderResponse orderToOrderResponse(Order order) {
         OrderResponse response = new OrderResponse();
@@ -120,4 +125,19 @@ public class OrderService {
         response.setItems(itemResponses);
         return response;
     }
+
+    private void sendOrderNotification(OrderResponse orderResponse) {
+        CompletableFuture.runAsync(() -> {
+            notificationClient.sendOrderNotification(orderResponse);
+        }).exceptionally(ex -> {
+            logger.error("Failed to send order notification for order: {}", orderResponse.getOrderId(), ex);
+            return null;
+        });
+    }
+
+    public UserDTO getOrderInfo(Integer userId) {
+        UserDTO userDTO = userServiceClient.getUserById(userId);
+        return  userDTO;
+    }
+
 }
