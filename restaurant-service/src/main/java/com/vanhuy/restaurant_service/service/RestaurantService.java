@@ -3,7 +3,6 @@ package com.vanhuy.restaurant_service.service;
 import com.vanhuy.restaurant_service.dto.RestaurantDTO;
 import com.vanhuy.restaurant_service.exception.RestaurantNotFoundException;
 import com.vanhuy.restaurant_service.model.Restaurant;
-import com.vanhuy.restaurant_service.repository.MenuItemRepository;
 import com.vanhuy.restaurant_service.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ import java.util.Optional;
 @Slf4j
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
-    private final MenuItemRepository menuItemRepository;
     private final FileStorageService fileStorageService;
 
     @Value("${app.base-url}")
@@ -39,7 +37,6 @@ public class RestaurantService {
         restaurantRepository.save(restaurant);
         return toDTO(restaurant);
     }
-
 
     public List<RestaurantDTO> getAllRestaurants() {
         return restaurantRepository.findAll().stream()
@@ -86,5 +83,14 @@ public class RestaurantService {
     public Restaurant getRestaurantById(Integer restaurantId) {
         return restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RestaurantNotFoundException("Restaurant not found"));
+    }
+
+    public Page<RestaurantDTO> searchRestaurants(String keyword, Pageable pageable) {
+        // Handle null or empty keyword by setting it to null to trigger 'all results' behavior
+        if (keyword == null || keyword.trim().isEmpty()) {
+            keyword = null;
+        }
+        return restaurantRepository.searchByKeyword(keyword, pageable)
+                .map(this::toDTO);
     }
 }

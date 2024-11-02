@@ -2,7 +2,9 @@ package com.vanhuy.restaurant_service.controller;
 
 
 import com.vanhuy.restaurant_service.dto.RestaurantDTO;
+import com.vanhuy.restaurant_service.dto.RestaurantSearchCriteria;
 import com.vanhuy.restaurant_service.exception.RestaurantNotFoundException;
+import com.vanhuy.restaurant_service.projection.RestaurantProjection;
 import com.vanhuy.restaurant_service.service.FileStorageService;
 import com.vanhuy.restaurant_service.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +42,6 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.getRestaurantsByPage(pageable));
     }
 
-
     @PostMapping("/{restaurantId}/upload-image")
     public ResponseEntity<RestaurantDTO> uploadImage(
             @PathVariable Integer restaurantId,
@@ -63,5 +64,12 @@ public class RestaurantController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                 .header(HttpHeaders.CACHE_CONTROL, "max-age=31536000") // Cache for 1 year
                 .body(resource);
+    }
+
+    @GetMapping("/search")
+    public Page<RestaurantDTO> searchRestaurants(
+            @RequestParam(required = false) String keyword,
+            Pageable pageable) {
+        return restaurantService.searchRestaurants(keyword, pageable);
     }
 }
