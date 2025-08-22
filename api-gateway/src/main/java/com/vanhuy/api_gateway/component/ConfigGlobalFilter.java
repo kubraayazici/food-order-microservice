@@ -41,26 +41,26 @@ public class ConfigGlobalFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
 
-        if (isPublicEndpoint(path)) {
-            return chain.filter(exchange);
-        }
-
-        String token = extractToken(exchange);
-        if (token == null) {
-            return handleUnauthorized(exchange);
-        }
-
-        try {
-            ValidTokenResponse validateToken = authService.validateToken(token);
-            if (validateToken == null || !validateToken.isValid()) {
-                logger.warn("Invalid token: {}", token);
-                return handleUnauthorized(exchange);
-            }
-        } catch (RuntimeException e) {
-            // Log the error
-            logger.error("Error during token validation", e);
-            return handleServerError(exchange, e);
-        }
+//        if (isPublicEndpoint(path)) {
+//            return chain.filter(exchange);
+//        }
+//
+//        String token = extractToken(exchange);
+//        if (token == null) {
+//            return handleUnauthorized(exchange);
+//        }
+//
+//        try {
+//            ValidTokenResponse validateToken = authService.validateToken(token);
+//            if (validateToken == null || !validateToken.isValid()) {
+//                logger.warn("Invalid token: {}", token);
+//                return handleUnauthorized(exchange);
+//            }
+//        } catch (RuntimeException e) {
+//            // Log the error
+//            logger.error("Error during token validation", e);
+//            return handleServerError(exchange, e);
+//        }
         return chain.filter(exchange);
     }
 
