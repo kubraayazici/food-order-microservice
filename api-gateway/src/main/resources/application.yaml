@@ -19,7 +19,7 @@ spring:
           predicates:
             - Path=/services/**
           # Bu URI sadece "http" şemasını sağlamak için dummy; filtre gerçek hedefi set edecek
-          uri: http://192.108.11.168:8095
+          uri: no://services
           # NOT: StripPrefix kullanma; filter path'i zaten /api/... olarak ayarlıyor
 server:
   port: 8088

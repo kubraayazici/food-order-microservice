@@ -15,15 +15,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 @Component
-@Order(Ordered.LOWEST_PRECEDENCE - 1) // NettyRoutingFilter'dan hemen önce
+@Order(Ordered.LOWEST_PRECEDENCE) // NettyRoutingFilter'dan hemen önce
 public class RewriteTargetUrlFilter implements GlobalFilter, Ordered {
 
-    @Override public int getOrder() { return Ordered.LOWEST_PRECEDENCE - 1; }
+    @Override public int getOrder() { return Ordered.LOWEST_PRECEDENCE; }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         var req  = exchange.getRequest();
         var path = req.getURI().getRawPath(); // örn: /services/sselogs/api/log/labels
+        System.out.println("RewriteTargetUrlFilter called: " + path);
         if (!path.startsWith("/services/")) return chain.filter(exchange);
 
         var parts = path.split("/", 4); // ["", "services", "{svc}", "{rest}"]
@@ -34,12 +35,13 @@ public class RewriteTargetUrlFilter implements GlobalFilter, Ordered {
         int port = switch (svc) {
             case "sselogs" -> 8084;
             case "dbops"   -> 8081;
+            case "clusterops"-> 8095;
             default        -> -1;
         };
         if (port < 0) return chain.filter(exchange);
 
         URI newUri = UriComponentsBuilder.fromUri(req.getURI())
-                .scheme("http").host("192.168.11.168").port(8095).replacePath(rest)
+                .scheme("http").host("192.168.11.218").port(8095).replacePath(rest)
                 .build(true).toUri();
 
         addOriginalRequestUrl(exchange, req.getURI());
